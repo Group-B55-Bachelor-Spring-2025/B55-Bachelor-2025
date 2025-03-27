@@ -1,0 +1,17 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: timescale/timescaledb:latest-pg14
+    container_name: climate-control-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: localuser
+      POSTGRES_PASSWORD: localdb123
+      POSTGRES_DB: climate-control
+    ports:
+      - "5432:5432"
+    volumes:
+      - timescale_data:/var/lib/postgresql/data
+volumes:
+  timescale_data:
