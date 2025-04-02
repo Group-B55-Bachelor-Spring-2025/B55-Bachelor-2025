@@ -10,41 +10,53 @@ Docker and Docker Compose
 npm (latest version)
 
 ## Installation
-```
-  # Clone the repository
-  git clone https://github.com/yourusername/smart-klimakontrollsystem.git
-  cd smart-klimakontrollsystem
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/smart-klimakontrollsystem.git
+cd smart-klimakontrollsystem
 
-  # Install dependencies
-  npm install
+# Install dependencies
+npm install
 ```
 
 ## Database Setup
 `docker-compose up -d`
 
 ## Environment Configuration
-```
-  # Copy the example .env file
-  cp .env.example .env
+```bash
+# Copy the example .env file
+cp .env.example .env
 ```
 
 ## Database Migration
-Run database migrations to set up the schema
+Run database migrations to set up the schema:
 
-`npm run migration:run`
+```bash
+# Create a new migration
+npm run migration:create --name=MigrationName
+
+# Generate a migration from entity changes
+npm run migration:generate
+
+# Run pending migrations
+npm run migration:run
+
+# Revert the last applied migration
+npm run migration:revert
+```
 
 ## Running the Application
 
 `npm run start:dev`
 
 ## Testing
-```
-  # Run unit tests
-  npm run test
+```bash
+# Run unit tests
+npm run test
 
-  # Run tests with coverage
-  npm run test:cov
+# Run tests with coverage
+npm run test:cov
 
-  # Run end-to-end tests
-  npm run test:e2e
+# Run end-to-end tests
+npm run test:e2e
 ```
