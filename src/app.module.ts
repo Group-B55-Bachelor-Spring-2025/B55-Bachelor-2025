@@ -10,11 +10,29 @@ import { DeviceGroupsModule } from './device-management/device-groups/device-gro
 import { DevicesModule } from './device-management/devices/devices.module';
 import { ProviderCredentialsModule } from './provider-management/provider-credentials/provider-credentials.module';
 import { SmartControlSettingsModule } from './smart-control/smart-control-settings/smart-control-settings.module';
+import * as Joi from 'joi';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      validationSchema: Joi.object({
+        // Database
+        DB_HOST: Joi.string().required(),
+        DB_PORT: Joi.number().default(5432),
+        DB_USER: Joi.string().required(),
+        DB_PASS: Joi.string().required(),
+        DB_NAME: Joi.string().required(),
+
+        // Application
+        NODE_ENV: Joi.string()
+          .valid('development', 'production', 'test')
+          .default('development'),
+        PORT: Joi.number().default(3000),
+      }),
+      validationOptions: {
+        abortEarly: true,
+      },
     }),
     DatabaseModule,
     AddressesModule,

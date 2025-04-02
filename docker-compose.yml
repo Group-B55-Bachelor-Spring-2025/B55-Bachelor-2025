@@ -6,9 +6,9 @@ services:
     container_name: climate-control-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: localuser
-      POSTGRES_PASSWORD: localdb123
-      POSTGRES_DB: climate-control
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME}
     ports:
       - "5432:5432"
     volumes:

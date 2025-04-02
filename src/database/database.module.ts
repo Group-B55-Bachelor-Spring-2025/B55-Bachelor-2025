@@ -4,9 +4,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
     TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
+      imports: [ConfigModule], // Keep this to inject ConfigService
       useFactory: (config: ConfigService) => ({
         type: 'postgres',
         host: config.get<string>('DB_HOST'),
@@ -14,7 +13,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         username: config.get<string>('DB_USER'),
         password: config.get<string>('DB_PASS'),
         database: config.get<string>('DB_NAME'),
-        entities: [__dirname + '/**/*.entity{.ts,.js}'],
+        entities: [__dirname + '/../**/*.entity{.ts,.js}'],
         synchronize: false,
         migrations: [__dirname + '/../migrations/*{.ts,.js}'],
         migrationsRun: false,
