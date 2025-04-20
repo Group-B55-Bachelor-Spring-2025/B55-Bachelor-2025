@@ -1,26 +1,30 @@
-import { Injectable } from '@nestjs/common';
-import { CreateRegionDto } from './dto/create-region.dto';
-import { UpdateRegionDto } from './dto/update-region.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Region } from './entities/region.entity';
+import { Repository } from 'typeorm';
+import { IRegionsService } from '../interfaces/region.interface';
 
 @Injectable()
-export class RegionsService {
-  create(createRegionDto: CreateRegionDto) {
-    return 'This action adds a new region';
+export class RegionsService implements IRegionsService {
+  constructor(
+    @InjectRepository(Region)
+    private readonly regionRepository: Repository<Region>,
+  ) {}
+
+  async findAll(): Promise<Region[]> {
+    return await this.regionRepository.find({
+      order: { name: 'ASC' },
+    });
   }
 
-  findAll() {
-    return `This action returns all regions`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} region`;
-  }
-
-  update(id: number, updateRegionDto: UpdateRegionDto) {
-    return `This action updates a #${id} region`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} region`;
+  async findByCode(code: string): Promise<Region> {
+    const region = await this.regionRepository.findOne({
+      where: { code },
+      relations: ['addresses'],
+    });
+    if (!region) {
+      throw new NotFoundException(`Region with code ${code} not found`);
+    }
+    return region;
   }
 }

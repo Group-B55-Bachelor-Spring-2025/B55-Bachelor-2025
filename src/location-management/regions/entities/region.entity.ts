@@ -18,6 +18,6 @@ export class Region {
   @Column({ type: 'bool', nullable: true })
   active!: boolean;
 
-  @OneToMany(() => Address, (address) => address.regionCode)
+  @OneToMany(() => Address, (address) => address.region)
   addresses!: Address[];
 }
