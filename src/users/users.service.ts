@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { IUsersService } from './interfaces/user.interface';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService implements IUsersService {
@@ -14,7 +15,20 @@ export class UsersService implements IUsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    const newUser = this.usersRepository.create(createUserDto);
+    const existingUser = await this.usersRepository.findOne({
+      where: { email: createUserDto.email },
+    });
+    if (existingUser) {
+      throw new NotFoundException(
+        `User with email ${createUserDto.email} already exists`,
+      );
+    }
+    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+
+    const newUser = this.usersRepository.create({
+      ...createUserDto,
+      password: hashedPassword,
+    });
     return this.usersRepository.save(newUser);
   }
 
