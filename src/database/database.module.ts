@@ -15,7 +15,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         database: config.get<string>('DB_NAME'),
         entities: [__dirname + '/../**/*.entity{.ts,.js}'],
         synchronize: false,
-        migrations: [__dirname + '/../migrations/*{.ts,.js}'],
+        migrations: [__dirname + '/../database/migrations/*{.ts,.js}'],
         migrationsRun: false,
       }),
       inject: [ConfigService],

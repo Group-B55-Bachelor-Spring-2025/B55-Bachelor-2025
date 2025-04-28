@@ -7,6 +7,7 @@ import { Region } from 'src/location-management/regions/entities/region.entity';
 import { Provider } from 'src/provider-management/providers/entities/provider.entity';
 import { ProviderCredential } from 'src/provider-management/provider-credentials/entities/provider-credential.entity';
 import { SmartControlSetting } from 'src/smart-control/smart-control-settings/entities/smart-control-setting.entity';
+import { User } from '@app/users/entities/user.entity';
 
 config();
 
@@ -25,7 +26,8 @@ export default new DataSource({
     DeviceGroup,
     Device,
     SmartControlSetting,
+    User,
   ],
-  migrations: ['src/migrations/*.ts'],
+  migrations: ['src/database/migrations/*.ts'],
   migrationsTableName: 'migrations',
 });
