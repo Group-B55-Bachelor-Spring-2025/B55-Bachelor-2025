@@ -26,6 +26,6 @@ export default new DataSource({
     Device,
     SmartControlSetting,
   ],
-  migrations: ['src/migrations/*.ts'],
+  migrations: ['src/database/migrations/*.ts'],
   migrationsTableName: 'migrations',
 });
