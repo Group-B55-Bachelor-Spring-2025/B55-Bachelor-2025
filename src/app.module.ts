@@ -10,6 +10,7 @@ import { DeviceGroupsModule } from './device-management/device-groups/device-gro
 import { DevicesModule } from './device-management/devices/devices.module';
 import { ProviderCredentialsModule } from './provider-management/provider-credentials/provider-credentials.module';
 import { SmartControlSettingsModule } from './smart-control/smart-control-settings/smart-control-settings.module';
+import { UsersModule } from './users/users.module';
 import * as Joi from 'joi';
 
 @Module({
@@ -34,6 +35,7 @@ import * as Joi from 'joi';
         abortEarly: true,
       },
     }),
+    UsersModule,
     DatabaseModule,
     AddressesModule,
     LocationManagementModule,
