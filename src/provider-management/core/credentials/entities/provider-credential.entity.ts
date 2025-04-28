@@ -9,7 +9,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { Provider } from '../../providers/entities/provider.entity';
-import { Device } from '../../../device-management/devices/entities/device.entity';
+import { Device } from '../../../../device-management/devices/entities/device.entity';
 
 @Entity('provider_credentials')
 export class ProviderCredential {
@@ -23,10 +23,10 @@ export class ProviderCredential {
   accessToken!: string;
 
   @Column({ name: 'refresh_token', type: 'text', nullable: true })
-  refreshToken!: string;
+  refreshToken?: string;
 
   @Column({ name: 'expires_at', nullable: true })
-  expiresAt!: Date;
+  expiresAt?: Date;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;

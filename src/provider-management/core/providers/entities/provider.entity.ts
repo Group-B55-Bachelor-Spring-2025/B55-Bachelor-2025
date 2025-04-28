@@ -6,7 +6,7 @@ import {
   UpdateDateColumn,
   OneToMany,
 } from 'typeorm';
-import { ProviderCredential } from '../../provider-credentials/entities/provider-credential.entity';
+import { ProviderCredential } from '../../credentials/entities/provider-credential.entity';
 
 @Entity('providers')
 export class Provider {

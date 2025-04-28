@@ -1,4 +1,4 @@
-import { IProviderService } from '../interfaces/provider.interface';
+import { IProviderService } from '../../interfaces/provider.interface';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProviderDto } from './dto/create-provider.dto';
 import { UpdateProviderDto } from './dto/update-provider.dto';
