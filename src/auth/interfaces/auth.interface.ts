@@ -50,9 +50,8 @@ export interface IAuthService {
 
   /**
    * Logout a user by invalidating their tokens
-   * @param userId - User ID to log out
    * @param token - Optional token to invalidate
    * @returns Success status
    */
-  logout(userId: number, token?: string): Promise<{ success: boolean }>;
+  logout(token: string): Promise<{ success: boolean }>;
 }
