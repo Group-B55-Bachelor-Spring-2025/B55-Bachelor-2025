@@ -10,6 +10,7 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { LocalStrategy } from './strategies/local.strategy';
 import { UsersModule } from 'src/users/users.module';
+import { AuthGuard } from './guards/auth.guard';
 
 @Module({
   imports: [
@@ -25,8 +26,15 @@ import { UsersModule } from 'src/users/users.module';
     }),
     TypeOrmModule.forFeature([Token]),
   ],
-  providers: [AuthService, LocalStrategy, JwtStrategy, TokensService],
+  providers: [
+    AuthService,
+    LocalStrategy,
+    JwtStrategy,
+    TokensService,
+    TokensService,
+    AuthGuard,
+  ],
   controllers: [AuthController],
-  exports: [AuthService],
+  exports: [AuthService, TokensService, AuthGuard],
 })
 export class AuthModule {}

@@ -5,16 +5,18 @@ import {
   HttpCode,
   HttpStatus,
   Post,
-  Request,
+  Request as NestRequest,
+  Res,
   UseGuards,
 } from '@nestjs/common';
+import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './guards/local/local.guard';
-import { JwtAuthGuard } from './guards/jwt/jwt.guard';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { RequestWithUser } from './interfaces/auth.types';
+import { AuthGuard } from './guards/auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -29,8 +31,22 @@ export class AuthController {
   @Post('login')
   @UseGuards(LocalAuthGuard)
   @HttpCode(HttpStatus.OK)
-  async login(@Body() loginDto: LoginDto) {
-    return await this.authService.login(loginDto);
+  async login(@Body() loginDto: LoginDto, @Res() res: Response) {
+    const user = await this.authService.login(loginDto);
+    const { accessToken, refreshToken } = user;
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    });
+
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    });
+
+    return res.redirect('/');
   }
 
   @Post('refresh')
@@ -41,15 +57,30 @@ export class AuthController {
   }
 
   @Get('me')
-  @UseGuards(JwtAuthGuard)
-  getProfile(@Request() req: RequestWithUser) {
+  @UseGuards(AuthGuard)
+  getProfile(@NestRequest() req: RequestWithUser) {
     return req.user;
   }
 
   @Post('logout')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
-  async logout(@Request() req: RequestWithUser) {
-    return this.authService.logout(req.user.id);
+  async logout(@NestRequest() req: Request, @Res() res: Response) {
+    if (req.cookies && req.cookies['accessToken']) {
+      return res.redirect('/login');
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const accessToken: string | null = req.cookies?.['accessToken'];
+
+    if (accessToken) {
+      await this.authService.logout(accessToken);
+
+      res.clearCookie('accessToken');
+      res.clearCookie('refreshToken');
+
+      return res.redirect('/login');
+    }
+
+    return res.redirect('/login');
   }
 }

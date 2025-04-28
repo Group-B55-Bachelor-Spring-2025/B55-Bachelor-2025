@@ -118,14 +118,38 @@ export class AuthService implements IAuthService {
     }
   }
 
-  async logout(userId: number, token?: string): Promise<{ success: boolean }> {
+  async logout(token: string): Promise<{ success: boolean }> {
+    const decoded = this.decodedToken(token);
+    const userId = decoded?.sub;
+    if (!userId) {
+      throw new UnauthorizedException('Invalid token');
+    }
+    const user = await this.usersService.findOne(userId);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
     if (token) {
       await this.tokensService.revokeToken(token);
     } else {
-      await this.tokensService.revokeAllUserTokens(userId);
+      await this.tokensService.revokeAllUserTokens(user.id);
     }
 
     return { success: true };
+  }
+
+  private decodedToken(token: string): JwtPayload {
+    try {
+      const decoded: JwtPayload = this.jwtService.decode(token);
+      if (!decoded) {
+        throw new UnauthorizedException('Invalid token');
+      }
+      return decoded;
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Invalid token';
+      throw new UnauthorizedException(errorMessage);
+    }
   }
 
   private async generateTokens(
