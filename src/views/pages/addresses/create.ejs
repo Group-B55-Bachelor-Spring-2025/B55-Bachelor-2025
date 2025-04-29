@@ -21,7 +21,12 @@
         <input type="text" id="country" name="country" placeholder="Country" class="w-full p-2 border rounded">
       </div>
       <div class="mb-4">
-        <input type="text" id="regionCode" name="regionCode" placeholder="Region Code" class="w-full p-2 border rounded">
+        <select id="regionCode" name="regionCode" required class="w-full p-2 border rounded">
+          <option value="" disabled selected>Select Region</option>
+          <% regions.forEach(region => { %>
+            <option value="<%= region.code %>"><%= region.name %></option>
+          <% }); %>
+        </select>
       </div>
       <button type="submit" class="float-right px-4 py-2 bg-teal-700 text-white rounded cursor-pointer">Add Address</button>
     </form>
@@ -57,17 +62,26 @@
     form.addEventListener('submit', function(event) {
       event.preventDefault();
       const formData = new FormData(form);
+      const formObject = {};
+      formData.forEach((value, key) => {
+        formObject[key] = value;
+      });
+      
       fetch('/addresses', {
         method: 'POST',
         headers: {
+          'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: formData
+        body: JSON.stringify(formObject)
       })
       .then(response => response.json())
       .then(data => {
         console.log(data);
-        if (data) {
+        if (data) { 
+          if (data.error) {
+            alert(data.error);
+          }
           window.location.href = '/';
         } else {
           alert('Error adding address');
