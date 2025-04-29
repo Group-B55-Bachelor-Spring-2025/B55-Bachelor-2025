@@ -2,16 +2,23 @@ import { Controller, Get, Render, Req, Res, UseGuards } from '@nestjs/common';
 import { AppService } from './app.service';
 import { AuthGuard } from './auth/guards/auth.guard';
 import { Request, Response } from 'express';
+import { AddressesService } from './location-management/addresses/addresses.service';
+import { CurrentUser } from './auth/decorators/current-user.decorator';
+import { User } from './users/entities/user.entity';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(
+    private readonly appService: AppService,
+    private readonly addressesService: AddressesService,
+  ) {}
 
   @Get()
   @UseGuards(AuthGuard)
   @Render('pages/index')
-  getHello() {
-    return { message: this.appService.getHello(), title: 'Home' };
+  async getIndex(@CurrentUser() user: User) {
+    const addresses = await this.addressesService.findAll(user.role, user.id);
+    return { addresses, title: 'Home' };
   }
 
   @Get('login')
