@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -10,7 +10,11 @@ import { DeviceGroupsModule } from './device-management/device-groups/device-gro
 import { DevicesModule } from './device-management/devices/devices.module';
 import { ProviderCredentialsModule } from './provider-management/core/credentials/provider-credentials.module';
 import { SmartControlSettingsModule } from './smart-control/smart-control-settings/smart-control-settings.module';
+import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
 import * as Joi from 'joi';
+import * as cookieParser from 'cookie-parser';
+import { RegionsModule } from './location-management/regions/regions.module';
 
 @Module({
   imports: [
@@ -34,6 +38,8 @@ import * as Joi from 'joi';
         abortEarly: true,
       },
     }),
+    UsersModule,
+    AuthModule,
     DatabaseModule,
     AddressesModule,
     LocationManagementModule,
@@ -42,8 +48,13 @@ import * as Joi from 'joi';
     DeviceGroupsModule,
     DevicesModule,
     SmartControlSettingsModule,
+    RegionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(cookieParser()).forRoutes('*');
+  }
+}
