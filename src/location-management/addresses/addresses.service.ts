@@ -6,6 +6,7 @@ import { Address } from './entities/address.entity';
 import { Region } from '../regions/entities/region.entity';
 import { Repository } from 'typeorm';
 import { IAddressesService } from '../interfaces/address.interface';
+import { Role } from '@app/users/enums/role.enum';
 @Injectable()
 export class AddressesService implements IAddressesService {
   constructor(
@@ -15,7 +16,10 @@ export class AddressesService implements IAddressesService {
     private readonly regionRepository: Repository<Region>,
   ) {}
 
-  async create(createAddressDto: CreateAddressDto): Promise<Address> {
+  async create(
+    createAddressDto: CreateAddressDto,
+    userId: number,
+  ): Promise<Address> {
     const region = await this.regionRepository.findOneBy({
       code: createAddressDto.regionCode,
     });
@@ -27,14 +31,24 @@ export class AddressesService implements IAddressesService {
     }
     const address = this.addressRepository.create({
       ...createAddressDto,
+      user: { id: userId },
       region,
     });
     return this.addressRepository.save(address);
   }
 
-  async findAll(): Promise<Address[]> {
-    // TODO: Implement fetching addresses by user after creating the users and auth services
-    return Promise.resolve([]);
+  async findAll(role: Role, userId?: number): Promise<Address[]> {
+    if (role === Role.ADMIN) {
+      return await this.addressRepository.find({
+        relations: ['region'],
+      });
+    } else if (role === Role.USER && userId) {
+      return await this.addressRepository.find({
+        where: { userId },
+        relations: ['region', 'user'],
+      });
+    }
+    throw new NotFoundException('No addresses found for this user');
   }
 
   async findOne(id: number): Promise<Address> {
