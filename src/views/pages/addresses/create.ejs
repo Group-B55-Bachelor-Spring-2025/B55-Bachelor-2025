@@ -5,13 +5,13 @@
       <button id="closeModal" class="text-gray hover:text-gray-700 cursor-pointer text-xl">x</button>
     </div>   
     <form id="addressForm" action="/addresses" method="POST" class="mt-4 py-4 flex flex-col gap-4">
-      <div class="mb-4">
+      <div>
         <input type="text" id="name" name="name" placeholder="Name" required class="w-full p-2 border rounded">
       </div>
-      <div class="mb-4">
+      <div>
         <input type="text" id="address" name="address" placeholder="Address" required class="w-full p-2 border rounded">
       </div>
-      <div class="mb-4">
+      <div>
         <input type="text" id="city" name="city" placeholder="City" required class="w-full p-2 border rounded">
       </div>
       <div class="mb-4">
@@ -20,7 +20,7 @@
       <div class="mb-4">
         <input type="text" id="country" name="country" placeholder="Country" class="w-full p-2 border rounded">
       </div>
-      <div class="mb-4">
+      <div>
         <select id="regionCode" name="regionCode" required class="w-full p-2 border rounded">
           <option value="" disabled selected>Select Region</option>
           <% regions.forEach(region => { %>
