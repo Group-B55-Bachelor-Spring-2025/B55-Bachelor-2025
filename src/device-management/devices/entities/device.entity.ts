@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { DeviceGroup } from '../../device-groups/entities/device-group.entity';
-import { ProviderCredential } from '../../../provider-management/provider-credentials/entities/provider-credential.entity';
+import { ProviderCredential } from 'src/provider-management/core/credentials/entities/provider-credential.entity';
 
 @Entity('devices')
 export class Device {
