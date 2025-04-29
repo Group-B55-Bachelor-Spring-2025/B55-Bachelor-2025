@@ -2,6 +2,7 @@ import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { TokensService } from '../tokens/tokens.service';
 import { TokenType } from '../entities/token.entity';
+import { Role } from '@app/users/enums/role.enum';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -13,13 +14,12 @@ export class AuthGuard implements CanActivate {
     // Access cookies safely
     const accessToken = request.cookies?.['accessToken'] as string | undefined;
 
-    if (!accessToken) {
-      response.redirect('/login');
-      return false;
-    }
-
     try {
-      // Verify the token
+      // Verify token
+      if (!accessToken) {
+        response.redirect('/login');
+        return false;
+      }
       const payload = await this.tokensService.verifyToken(
         accessToken,
         TokenType.ACCESS,
@@ -29,6 +29,19 @@ export class AuthGuard implements CanActivate {
         response.redirect('/login');
         return false;
       }
+
+      const _decoded = this.tokensService.decodedToken(accessToken);
+
+      // Create the user object
+      const user = {
+        id: _decoded.sub,
+        email: _decoded.email,
+        role: _decoded.role as Role,
+        name: _decoded.name,
+      };
+
+      // Assign to request.user instead of payload.user
+      request.user = user;
 
       return true;
       // eslint-disable-next-line @typescript-eslint/no-unused-vars

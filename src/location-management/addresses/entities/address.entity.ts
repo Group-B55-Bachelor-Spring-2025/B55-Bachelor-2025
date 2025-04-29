@@ -1,3 +1,4 @@
+import { User } from '@app/users/entities/user.entity';
 import { Region } from 'src/location-management/regions/entities/region.entity';
 import {
   Entity,
@@ -38,7 +39,14 @@ export class Address {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
 
+  @Column({ name: 'user_id' })
+  userId!: number;
+
   @ManyToOne(() => Region)
   @JoinColumn({ name: 'region_code', referencedColumnName: 'code' })
   region!: Region;
+
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'user_id' })
+  user!: User;
 }

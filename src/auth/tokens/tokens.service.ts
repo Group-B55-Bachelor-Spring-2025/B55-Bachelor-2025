@@ -1,14 +1,17 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThan, MoreThan } from 'typeorm';
 import { Token, TokenType } from '../entities/token.entity';
 import * as crypto from 'crypto';
+import { JwtPayload } from '../interfaces/auth.types';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class TokensService {
   constructor(
     @InjectRepository(Token)
     private tokenRepository: Repository<Token>,
+    private jwtService: JwtService,
   ) {}
 
   // Store a new token
@@ -86,6 +89,20 @@ export class TokensService {
     });
 
     return result.affected || 0;
+  }
+
+  decodedToken(token: string): JwtPayload {
+    try {
+      const decoded: JwtPayload = this.jwtService.decode(token);
+      if (!decoded) {
+        throw new UnauthorizedException('Invalid token');
+      }
+      return decoded;
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Invalid token';
+      throw new UnauthorizedException(errorMessage);
+    }
   }
 
   // Hash a token for secure storage

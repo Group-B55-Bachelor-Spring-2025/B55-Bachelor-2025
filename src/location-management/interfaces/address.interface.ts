@@ -1,3 +1,4 @@
+import { Role } from '@app/users/enums/role.enum';
 export interface AddressProps {
   id?: number;
   name: string;
@@ -9,8 +10,8 @@ export interface AddressProps {
 }
 
 export interface IAddressesService {
-  create(address: AddressProps): Promise<AddressProps>;
-  findAll(): Promise<AddressProps[]>;
+  create(address: AddressProps, userId: number): Promise<AddressProps>;
+  findAll(roloe: Role, userId: number): Promise<AddressProps[]>;
   findOne(id: number): Promise<AddressProps>;
   update(id: number, address: AddressProps): Promise<AddressProps>;
   remove(id: number): Promise<AddressProps>;

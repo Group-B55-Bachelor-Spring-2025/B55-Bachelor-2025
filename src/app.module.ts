@@ -14,6 +14,7 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import * as Joi from 'joi';
 import * as cookieParser from 'cookie-parser';
+import { RegionsModule } from './location-management/regions/regions.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import * as cookieParser from 'cookie-parser';
     DeviceGroupsModule,
     DevicesModule,
     SmartControlSettingsModule,
+    RegionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
