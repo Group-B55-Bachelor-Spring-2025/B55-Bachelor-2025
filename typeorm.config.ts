@@ -7,6 +7,7 @@ import { Region } from 'src/location-management/regions/entities/region.entity';
 import { Provider } from 'src/provider-management/providers/entities/provider.entity';
 import { ProviderCredential } from 'src/provider-management/provider-credentials/entities/provider-credential.entity';
 import { SmartControlSetting } from 'src/smart-control/smart-control-settings/entities/smart-control-setting.entity';
+import { DayAheadPrice } from 'src/price-collector/day-ahead-price.entity';
 
 config();
 
@@ -25,6 +26,7 @@ export default new DataSource({
     DeviceGroup,
     Device,
     SmartControlSetting,
+    DayAheadPrice, 
   ],
   migrations: ['src/migrations/*.ts'],
   migrationsTableName: 'migrations',
