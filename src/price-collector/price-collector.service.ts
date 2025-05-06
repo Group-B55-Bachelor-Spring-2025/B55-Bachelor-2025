@@ -8,7 +8,7 @@ import { parseStringPromise } from 'xml2js';
 import { DayAheadPrice } from './day-ahead-price.entity';
 import { zoneEICMap } from '../zones/zone-map';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { IPriceCollectorService } from './price-interfaces';
+import { IPriceCollectorService } from './price-collector-interface';
 
 
 @Injectable()

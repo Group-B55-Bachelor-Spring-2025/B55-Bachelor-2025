@@ -1,5 +1,5 @@
 import { Controller, Get, Param, Inject } from '@nestjs/common';
-import { IPriceCollectorService } from './price-interfaces';
+import { IPriceCollectorService } from './price-collector-interface';
 
 @Controller('price-collector')
 export class PriceCollectorController {
