@@ -1,9 +1,11 @@
 import { Module } from '@nestjs/common';
-import { PriceAnalyzerService } from './price-analyzer.service';
-import { PriceCollectorModule } from '../price-collector/price-collector.module'; // Adjust the import path as necessary
+import { PriceAnalyzerService } from './price-percentile-based';
+import { PriceAnalyzerController } from './price-analyzer.controller';
+import { PriceCollectorModule } from '../price-collector/price-collector.module';
 
 @Module({
-  imports: [PriceCollectorModule], 
+  imports: [PriceCollectorModule],
+  controllers: [PriceAnalyzerController],
   providers: [PriceAnalyzerService],
   exports: [PriceAnalyzerService],
 })

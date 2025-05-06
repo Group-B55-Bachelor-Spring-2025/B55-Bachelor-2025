@@ -21,5 +21,6 @@ import { IPriceCollectorService } from './price-collector-interface';
       useClass: PriceCollectorService,
     },
   ],
+  exports: ['PriceCollectorService'],
 })
 export class PriceCollectorModule {}

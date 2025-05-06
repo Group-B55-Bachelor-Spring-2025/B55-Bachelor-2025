@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PriceAnalyzerService } from './price-analyzer.service';
+import { PriceAnalyzerService } from './price-percentile-based';
 
 describe('PriceAnalyzerService', () => {
   let service: PriceAnalyzerService;

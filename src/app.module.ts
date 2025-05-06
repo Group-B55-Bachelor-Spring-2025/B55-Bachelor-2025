@@ -13,6 +13,7 @@ import { SmartControlSettingsModule } from './smart-control/smart-control-settin
 import { PriceCollectorModule } from './price-collector/price-collector.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import * as Joi from 'joi';
+import { PriceAnalyzerModule } from './price-analyzer/price-analyzer.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import * as Joi from 'joi';
     SmartControlSettingsModule,
     PriceCollectorModule,
     ScheduleModule.forRoot(),
+    PriceAnalyzerModule,
   ],
   controllers: [AppController],
   providers: [AppService],
