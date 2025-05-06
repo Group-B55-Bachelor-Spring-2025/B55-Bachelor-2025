@@ -1,19 +1,25 @@
 import { Module } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
+import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+
 import { PriceCollectorService } from './price-collector.service';
 import { PriceCollectorController } from './price-collector.controller';
-import { ConfigModule } from '@nestjs/config'; 
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { DayAheadPrice } from './day-ahead-price.entity';
-
+import { IPriceCollectorService } from './price-interfaces';
 
 @Module({
   imports: [
-    HttpModule, 
-    ConfigModule, 
+    HttpModule,
+    ConfigModule,
     TypeOrmModule.forFeature([DayAheadPrice]),
   ],
-  providers: [PriceCollectorService],
   controllers: [PriceCollectorController],
+  providers: [
+    {
+      provide: 'PriceCollectorService',
+      useClass: PriceCollectorService,
+    },
+  ],
 })
 export class PriceCollectorModule {}

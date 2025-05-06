@@ -1,33 +1,32 @@
-import { Controller, Get, Param } from '@nestjs/common';
-import { PriceCollectorService } from './price-collector.service';
+import { Controller, Get, Param, Inject } from '@nestjs/common';
+import { IPriceCollectorService } from './price-interfaces';
 
 @Controller('price-collector')
 export class PriceCollectorController {
-  constructor(private readonly priceCollectorService: PriceCollectorService) {}
+  constructor(
+    @Inject('PriceCollectorService')
+    private readonly priceCollectorService: IPriceCollectorService
+  ) {}
 
-  // Fetch prices from the database
   @Get('db/showall')
   async getFromDb() {
     return this.priceCollectorService.getStoredPrices();
   }
 
-  // Fetch prices for all listed zones and store them in the database
   @Get('db/fetch-new')
   async fetchAndStoreAll() {
     await this.priceCollectorService.fetchAndStoreAllZones();
     return { message: 'Prices fetched and stored for all zones' };
   }
-  
-  // Fetch prices of a specific zone from the local database
+
   @Get('db/:zone')
   async getZonePrices(@Param('zone') zone: string) {
     return this.priceCollectorService.getPricesForZone(zone.toUpperCase());
   }
 
-  //delete all prices from the database
   @Get('reset')
-  async resetDB(@Param('zone') zone: string) {
-    this.priceCollectorService.clearAllPrices()
-    return {message: 'All prices cleared from the database.'};
+  async resetDB() {
+    await this.priceCollectorService.clearAllPrices();
+    return { message: 'All prices cleared from the database.' };
   }
 }

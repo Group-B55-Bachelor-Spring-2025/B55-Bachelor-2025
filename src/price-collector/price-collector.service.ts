@@ -7,9 +7,13 @@ import { firstValueFrom } from 'rxjs';
 import { parseStringPromise } from 'xml2js';
 import { DayAheadPrice } from './day-ahead-price.entity';
 import { zoneEICMap } from '../zones/zone-map';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { IPriceCollectorService } from './price-interfaces';
+
 
 @Injectable()
-export class PriceCollectorService {
+@Injectable()
+export class PriceCollectorService implements IPriceCollectorService {
   constructor(
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
@@ -17,6 +21,13 @@ export class PriceCollectorService {
     private readonly priceRepo: Repository<DayAheadPrice>,
   ) {}
 
+  //Schedule a cron job to fetch prices every 10 minutes
+  @Cron(CronExpression.EVERY_10_MINUTES) 
+  async scheduledDailyFetch() {
+    console.log('⏰ Running scheduled daily fetch...');
+    await this.fetchAndStoreAllZones();
+  }
+  
   async fetchPricesForZone(zone: string): Promise<DayAheadPrice> {
     const eic = zoneEICMap[zone];
     if (!eic) throw new Error(`Unknown zone code: ${zone}`);

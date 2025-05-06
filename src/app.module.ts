@@ -11,6 +11,7 @@ import { DevicesModule } from './device-management/devices/devices.module';
 import { ProviderCredentialsModule } from './provider-management/provider-credentials/provider-credentials.module';
 import { SmartControlSettingsModule } from './smart-control/smart-control-settings/smart-control-settings.module';
 import { PriceCollectorModule } from './price-collector/price-collector.module';
+import { ScheduleModule } from '@nestjs/schedule';
 import * as Joi from 'joi';
 
 @Module({
@@ -44,6 +45,7 @@ import * as Joi from 'joi';
     DevicesModule,
     SmartControlSettingsModule,
     PriceCollectorModule,
+    ScheduleModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [AppService],
