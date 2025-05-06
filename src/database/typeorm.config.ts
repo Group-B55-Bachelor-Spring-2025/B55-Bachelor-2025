@@ -4,10 +4,10 @@ import { DeviceGroup } from 'src/device-management/device-groups/entities/device
 import { Device } from 'src/device-management/devices/entities/device.entity';
 import { Address } from 'src/location-management/addresses/entities/address.entity';
 import { Region } from 'src/location-management/regions/entities/region.entity';
-import { Provider } from 'src/provider-management/providers/entities/provider.entity';
-import { ProviderCredential } from 'src/provider-management/provider-credentials/entities/provider-credential.entity';
 import { SmartControlSetting } from 'src/smart-control/smart-control-settings/entities/smart-control-setting.entity';
 import { User } from '@app/users/entities/user.entity';
+import { Provider } from '@app/provider-management/core/providers/entities/provider.entity';
+import { ProviderCredential } from '@app/provider-management/core/credentials/entities/provider-credential.entity';
 
 config();
 
