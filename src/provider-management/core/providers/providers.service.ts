@@ -5,12 +5,16 @@ import { UpdateProviderDto } from './dto/update-provider.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Provider } from './entities/provider.entity';
+import { MillService } from '@app/provider-management/adapters/mill/mill.service';
+import { ProviderCredentialsService } from '../credentials/provider-credentials.service';
 
 @Injectable()
 export class ProvidersService implements IProviderService {
   constructor(
     @InjectRepository(Provider)
     private readonly providerRepository: Repository<Provider>,
+    private readonly millService: MillService,
+    private readonly providerCredentialService: ProviderCredentialsService,
   ) {}
 
   async create(createProviderDto: CreateProviderDto): Promise<Provider> {
@@ -44,5 +48,22 @@ export class ProvidersService implements IProviderService {
       throw new NotFoundException(`Provider with ID ${id} not found`);
     }
     await this.providerRepository.delete(id);
+  }
+
+  async fetchProviderDevices(id: number, userId: number): Promise<unknown> {
+    const provider = await this.findOne(id);
+    if (!provider) {
+      throw new NotFoundException(`Provider with ID ${id} not found`);
+    }
+    switch (provider.name) {
+      case 'mill': {
+        const devices = await this.millService.getAllDevices(provider, userId);
+        return devices;
+      }
+      default:
+        throw new NotFoundException(
+          `Provider ${provider.name} is not supported for importing devices`,
+        );
+    }
   }
 }

@@ -1,20 +1,54 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  UnauthorizedException,
+  Inject,
+  forwardRef,
+} from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
-import { firstValueFrom, catchError } from 'rxjs';
-import { AxiosError } from 'axios';
+import { firstValueFrom, catchError, Observable } from 'rxjs';
+import axios, { AxiosError, AxiosInstance, AxiosResponse } from 'axios';
+import { jwtDecode } from 'jwt-decode';
+import { add } from 'date-fns';
 import { Provider } from '../../core/providers/entities/provider.entity';
 import { StoreCredentialsProps } from 'src/provider-management/interfaces/provider-auth.interface';
+import { ProviderCredential } from '@app/provider-management/core/credentials/entities/provider-credential.entity';
+import { ProviderCredentialsService } from '@app/provider-management/core/credentials/provider-credentials.service';
+import {
+  MillAuthResponse,
+  MillDevice,
+  MillDeviceResponse,
+  MillHouse,
+  MillHousesResponse,
+  MillRoomsResponse,
+} from '../../interfaces/mill.types';
 
-interface MillAuthResponse {
-  idToken: string;
-  refreshToken: string;
-}
+/**
+ * Extracts the expiration time from a JWT token
+ * Falls back to a 9-minute expiration if the token doesn't contain an exp claim
+ */
+export const getIdTokenExpiration = (tokens: MillAuthResponse): Date | null => {
+  if (tokens?.idToken) {
+    const jwtPayload = jwtDecode(tokens.idToken);
+
+    return jwtPayload?.exp
+      ? new Date((jwtPayload?.exp || 0) * 1000)
+      : add(new Date(), { minutes: 9 });
+  }
+
+  return null;
+};
 
 @Injectable()
 export class MillService {
   private readonly logger = new Logger(MillService.name);
 
-  constructor(private readonly httpService: HttpService) {}
+  constructor(
+    private readonly httpService: HttpService,
+    @Inject(forwardRef(() => ProviderCredentialsService))
+    private readonly providerCredentialsService: ProviderCredentialsService,
+  ) {}
 
   /**
    * Authenticates with the Mill API
@@ -27,7 +61,7 @@ export class MillService {
     try {
       const authUrl = `${provider.apiBaseUrl}/customer/auth/sign-in`;
 
-      const response = await firstValueFrom(
+      const observable: Observable<AxiosResponse<MillAuthResponse>> =
         this.httpService
           .post<MillAuthResponse>(
             authUrl,
@@ -53,14 +87,15 @@ export class MillService {
                 );
               },
             ),
-          ),
-      );
+          );
+
+      const response = await firstValueFrom(observable);
 
       // Store the credentials
       const credentials: StoreCredentialsProps = {
         accessToken: response.data.idToken,
         refreshToken: response.data.refreshToken,
-        expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+        expiresAt: getIdTokenExpiration(response.data) || undefined,
       };
       return credentials;
     } catch (error) {
@@ -69,5 +104,205 @@ export class MillService {
       this.logger.error(`Mill - Authentication error: ${errorMessage}`);
       throw error;
     }
+  }
+
+  /**
+   * Gets credentials for the provider, refreshing if needed
+   */
+  async getMillCredentials(
+    provider: Provider,
+    userId: number,
+  ): Promise<ProviderCredential> {
+    try {
+      const credentials = await this.providerCredentialsService.findOneByUserId(
+        provider.id,
+        userId,
+      );
+
+      if (!credentials) {
+        throw new UnauthorizedException(
+          `No credentials found for provider with ID ${provider.id} and user ID ${userId}`,
+        );
+      }
+
+      if (credentials.expiresAt && credentials.expiresAt < new Date()) {
+        this.logger.log('Token expired, refreshing...');
+        const req = axios.create({
+          baseURL: provider.apiBaseUrl,
+          headers: { Authorization: `Bearer ${credentials.refreshToken}` },
+        });
+
+        const millRes = await req.post<any>('/customer/auth/refresh');
+        console.log('Mill response:', millRes);
+
+        const tokens = millRes?.data as MillAuthResponse;
+        const updatedCreds = {
+          accessToken: tokens.idToken || credentials.accessToken,
+          refreshToken: tokens.refreshToken || credentials.refreshToken,
+          expiresAt: getIdTokenExpiration(tokens) || undefined,
+        };
+
+        await this.providerCredentialsService.update(
+          credentials.id,
+          updatedCreds,
+        );
+
+        // Return updated credentials
+        return {
+          ...credentials,
+          ...updatedCreds,
+        };
+      }
+
+      return credentials;
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`Mill - Get credentials error: ${errorMessage}`);
+      throw error;
+    }
+  }
+
+  async getMillHttpClient(
+    provider: Provider,
+    userId: number,
+  ): Promise<AxiosInstance> {
+    const credentials = await this.getMillCredentials(provider, userId);
+
+    if (!credentials.accessToken) {
+      throw new BadRequestException('No valid credentials');
+    }
+
+    const headers = { Authorization: `Bearer ${credentials.accessToken}` };
+
+    return axios.create({
+      baseURL: provider.apiBaseUrl,
+      headers,
+    });
+  }
+
+  async getHouses(provider: Provider, userId: number): Promise<MillHouse[]> {
+    try {
+      const client = await this.getMillHttpClient(provider, userId);
+      const res = await client.get<MillHousesResponse>('/houses');
+
+      // Extract only id and name from each house in the ownHouses array
+      return res.data.ownHouses.map((house) => ({
+        id: house.id,
+        name: house.name,
+      }));
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`Mill - Get houses error: ${errorMessage}`);
+      throw new BadRequestException(`Failed to get houses: ${errorMessage}`);
+    }
+  }
+
+  async getRooms(
+    provider: Provider,
+    userId: number,
+    houseId: string,
+  ): Promise<MillRoomsResponse> {
+    try {
+      const client = await this.getMillHttpClient(provider, userId);
+      const res = await client.get<MillRoomsResponse>(
+        `/houses/${houseId}/rooms`,
+      );
+
+      return {
+        rooms: res.data.rooms.map((room) => ({
+          id: room.id,
+          name: room.name,
+          houseId: room.houseId,
+        })),
+        independentDeviceIds: res.data.independentDeviceIds || [],
+      };
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`Mill - Get rooms error: ${errorMessage}`);
+      throw new BadRequestException(`Failed to get rooms: ${errorMessage}`);
+    }
+  }
+
+  /**
+   * Maps a Mill API device response to our MillDevice interface
+   */
+  private mapDeviceFromApiResponse = (
+    millDeviceFromApi: MillDeviceResponse,
+  ): MillDevice => {
+    console.log('Mill device from API:', millDeviceFromApi);
+    return {
+      id: millDeviceFromApi.deviceId,
+      name: millDeviceFromApi.customName,
+      roomId: millDeviceFromApi.roomId,
+      houseId: millDeviceFromApi.houseId,
+      targetTemperature: millDeviceFromApi?.lastMetrics?.temperature,
+      temperature: millDeviceFromApi?.lastMetrics?.temperatureAmbient,
+      mac: millDeviceFromApi.macAddress,
+      subDomainId: millDeviceFromApi?.deviceType?.parentType?.name || 'Heaters',
+      offline: !millDeviceFromApi.isConnected,
+    };
+  };
+
+  /**
+   * Get devices for a specific room
+   * @param provider The provider entity
+   * @param userId The user ID
+   * @param roomId The room ID
+   * @returns Array of Mill devices
+   */
+  async getDevices(
+    provider: Provider,
+    userId: number,
+    roomId: string,
+  ): Promise<MillDevice[]> {
+    try {
+      const client = await this.getMillHttpClient(provider, userId);
+      const res = await client.get<{
+        devices: MillDeviceResponse[];
+      }>(`/rooms/${roomId}/devices`);
+
+      if (!res.data?.devices || !Array.isArray(res.data.devices)) {
+        return [];
+      }
+
+      return res.data.devices.map((device) =>
+        this.mapDeviceFromApiResponse(device),
+      );
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`Mill - Get devices error: ${errorMessage}`);
+      throw new BadRequestException(`Failed to get devices: ${errorMessage}`);
+    }
+  }
+
+  async getAllDevices(
+    provider: Provider,
+    userId: number,
+  ): Promise<MillDevice[]> {
+    const houses = await this.getHouses(provider, userId);
+    if (!houses || houses.length === 0) {
+      return [];
+    }
+
+    const rooms = await Promise.all(
+      houses.map((house) => this.getRooms(provider, userId, house.id)),
+    );
+    if (!rooms || rooms.length === 0) {
+      return [];
+    }
+
+    const roomIds = rooms.flatMap((r) => r.rooms.map((room) => room.id));
+    const devices = await Promise.all(
+      roomIds.map((roomId) => this.getDevices(provider, userId, roomId)),
+    );
+    if (!devices || devices.length === 0) {
+      return [];
+    }
+    // TODO: check the independentDevice and add them to the devices array
+    return devices.flatMap((d) => d);
   }
 }

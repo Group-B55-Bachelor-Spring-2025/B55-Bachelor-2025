@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  Inject,
+  forwardRef,
+} from '@nestjs/common';
 // import { CreateProviderCredentialDto } from './dto/create-provider-credential.dto';
 // import { UpdateProviderCredentialDto } from './dto/update-provider-credential.dto';
 import { ProviderCredential } from './entities/provider-credential.entity';
@@ -20,11 +25,14 @@ export class ProviderCredentialsService {
     @InjectRepository(Provider)
     private readonly providerRepository: Repository<Provider>,
     private readonly httpService: HttpService,
+    @Inject(forwardRef(() => MillService))
     private readonly millService: MillService,
   ) {}
+
   async authenticate(
     providerId: number,
     authDto: ProviderAuthProps,
+    userId: number,
   ): Promise<ProviderCredential | null> {
     // Find the provider
     const provider = await this.providerRepository.findOne({
@@ -45,6 +53,7 @@ export class ProviderCredentialsService {
         );
         const storedCredentials = await this.storeCredentials(
           providerId,
+          userId,
           tokenResponse,
         );
         return storedCredentials;
@@ -58,16 +67,18 @@ export class ProviderCredentialsService {
 
   async storeCredentials(
     providerId: number,
+    userId: number,
     credentials: StoreCredentialsProps,
   ): Promise<ProviderCredential> {
-    // Find existing credential or create new one
+    // Find existing credential for this user and provider or create new one
     let credential = await this.providerCredentialRepository.findOne({
-      where: { providerId },
+      where: { providerId, userId },
     });
 
     if (!credential) {
       credential = new ProviderCredential();
       credential.providerId = providerId;
+      credential.userId = userId;
     }
 
     // Update credential properties
@@ -75,7 +86,6 @@ export class ProviderCredentialsService {
     credential.refreshToken = credentials.refreshToken || undefined;
     credential.expiresAt = credentials.expiresAt || undefined;
 
-    // Save to database
     return this.providerCredentialRepository.save(credential);
   }
 
@@ -83,13 +93,34 @@ export class ProviderCredentialsService {
     return `This action returns all providerCredentials`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} providerCredential`;
+  async findOne(id: number) {
+    const credential = await this.providerCredentialRepository.findOne({
+      where: { id },
+    });
+
+    if (!credential) {
+      throw new NotFoundException(`Credential with ID ${id} not found`);
+    }
+
+    return credential;
   }
 
-  // update(id: number, updateProviderCredentialDto: UpdateProviderCredentialDto) {
-  //   return `This action updates a #${id} providerCredential`;
-  // }
+  async findOneByUserId(providerId: number, userId: number) {
+    const credential = await this.providerCredentialRepository.findOne({
+      where: { providerId, userId },
+    });
+
+    return credential;
+  }
+
+  async update(id: number, updateData: Partial<ProviderCredential>) {
+    const credential = await this.findOne(id);
+
+    // Apply updates
+    Object.assign(credential, updateData);
+
+    return this.providerCredentialRepository.save(credential);
+  }
 
   remove(id: number) {
     return `This action removes a #${id} providerCredential`;
