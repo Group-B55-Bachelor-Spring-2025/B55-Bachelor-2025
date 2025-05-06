@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { Provider } from '../../providers/entities/provider.entity';
 import { Device } from '../../../../device-management/devices/entities/device.entity';
+import { User } from '../../../../users/entities/user.entity';
 
 @Entity('provider_credentials')
 export class ProviderCredential {
@@ -18,6 +19,9 @@ export class ProviderCredential {
 
   @Column({ name: 'provider_id' })
   providerId!: number;
+
+  @Column({ name: 'user_id' })
+  userId!: number;
 
   @Column({ name: 'access_token', type: 'text' })
   accessToken!: string;
@@ -37,6 +41,10 @@ export class ProviderCredential {
   @ManyToOne(() => Provider, (provider) => provider.credentials)
   @JoinColumn({ name: 'provider_id' })
   provider!: Provider;
+
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'user_id' })
+  user!: User;
 
   @OneToMany(() => Device, (device) => device.providerCredential)
   devices!: Device[];
