@@ -5,10 +5,6 @@ export class CreateDayAheadPriceTableCompositePK1710000000001 implements Migrati
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      DROP TABLE "day_ahead_price"
-    `);
-    
-    await queryRunner.query(`
       CREATE TABLE "day_ahead_price" (
         "zone" VARCHAR NOT NULL,
         "date" DATE NOT NULL,

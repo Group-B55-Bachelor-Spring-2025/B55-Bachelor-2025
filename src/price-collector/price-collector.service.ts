@@ -22,7 +22,7 @@ export class PriceCollectorService implements IPriceCollectorService {
   ) {}
 
   //Schedule a cron job to fetch prices every 10 minutes
-  @Cron(CronExpression.EVERY_10_MINUTES) 
+  @Cron(CronExpression.EVERY_HOUR) 
   async scheduledDailyFetch() {
     console.log('⏰ Running scheduled daily fetch...');
     await this.fetchAndStoreAllZones();
