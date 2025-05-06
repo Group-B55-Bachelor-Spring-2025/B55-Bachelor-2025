@@ -46,7 +46,16 @@ export class AuthController {
       sameSite: 'strict',
     });
 
-    return res.redirect('/');
+    return res.json({
+      success: true,
+      user: {
+        id: user.user.id,
+        email: user.user.email,
+        role: user.user.role,
+      },
+      accessToken,
+      refreshToken,
+    });
   }
 
   @Post('refresh')
@@ -66,21 +75,26 @@ export class AuthController {
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
   async logout(@NestRequest() req: Request, @Res() res: Response) {
-    if (req.cookies && req.cookies['accessToken']) {
-      return res.redirect('/login');
+    let accessToken: string | undefined;
+
+    accessToken = req.cookies?.['accessToken'] as string | undefined;
+
+    if (!accessToken) {
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        accessToken = authHeader.substring(7); // Remove 'Bearer ' prefix
+      }
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const accessToken: string | null = req.cookies?.['accessToken'];
 
     if (accessToken) {
       await this.authService.logout(accessToken);
-
       res.clearCookie('accessToken');
       res.clearCookie('refreshToken');
-
-      return res.redirect('/login');
     }
 
-    return res.redirect('/login');
+    return res.json({
+      success: true,
+      message: 'Logout successful',
+    });
   }
 }
