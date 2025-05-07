@@ -53,12 +53,12 @@ export class PriceAnalyzerController {
     @Query('percentile') percentile?: string,
     @Query('override') override?: string,
   ) {
-    const records = await this.priceCollectorService.getPricesForZone(zone.toUpperCase());
-    const latest = records[0];
-  
+    const latest = await this.priceCollectorService.getPricesForZone(zone.toUpperCase());
+
     if (!latest) {
       return { error: `No price data found for zone ${zone.toUpperCase()}` };
     }
+    
   
     const manualOverride = override === 'true';
     const parsedPercentile = percentile ? parseInt(percentile, 10) : 25;

@@ -31,44 +31,71 @@ export class PriceCollectorService implements IPriceCollectorService {
   async fetchPricesForZone(zone: string): Promise<DayAheadPrice> {
     const eic = zoneEICMap[zone];
     if (!eic) throw new Error(`Unknown zone code: ${zone}`);
+  
+    const now = new Date();
 
+    // "Tomorrow" in UTC terms
+    const tomorrow = new Date(Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate() + 1, // tomorrow
+      0, 0
+    ));
+    
+    // Format for API (UTC midnight start of tomorrow)
+    const formatDate = (date: Date) => {
+      const pad = (n: number) => n.toString().padStart(2, '0');
+      return (
+        date.getUTCFullYear().toString() +
+        pad(date.getUTCMonth() + 1) +
+        pad(date.getUTCDate()) +
+        pad(date.getUTCHours()) +
+        pad(date.getUTCMinutes())
+      );
+    };
+    
+    const periodStart = formatDate(new Date(tomorrow.getTime() - 2 * 60 * 60 * 1000)); // UTC - 2h = 22:00 previous day
+    const periodEnd = formatDate(new Date(tomorrow.getTime() + 22 * 60 * 60 * 1000));  // UTC + 22h = 22:00 next day
+    
     const params = {
       documentType: 'A44',
-      periodStart: '202407272200',
-      periodEnd: '202407282200',
+      periodStart,
+      periodEnd,
       out_Domain: eic,
       in_Domain: eic,
       'contract_MarketAgreement.type': 'A01',
       securityToken: this.configService.get<string>('PRICE_API_KEY'),
     };
-
+    
+  
     const response = await firstValueFrom(
       this.httpService.get('https://web-api.tp.entsoe.eu/api', {
         params,
         responseType: 'text',
       }),
     );
-
+  
     const xml = response.data;
     const json = await parseStringPromise(xml, { explicitArray: false });
-
+  
     const timeSeries = json?.Publication_MarketDocument?.TimeSeries;
     if (!timeSeries) {
       throw new Error(`No TimeSeries returned for zone: ${zone}`);
     }
-
+  
     const period = Array.isArray(timeSeries) ? timeSeries[0].Period : timeSeries.Period;
     const points = Array.isArray(period.Point) ? period.Point : [period.Point];
     const prices = points.map((pt: any) => Number(pt['price.amount']));
-
+  
     const date = period.timeInterval.start.slice(0, 10); // 'YYYY-MM-DD'
-
+  
     return this.priceRepo.create({
       zone,
       date,
       prices,
     });
   }
+  
 
   async fetchAndStoreAllZones(): Promise<void> {
     const zones = Object.keys(zoneEICMap);
@@ -106,12 +133,13 @@ export class PriceCollectorService implements IPriceCollectorService {
   }
   
 
-  async getPricesForZone(zone: string): Promise<DayAheadPrice[]> {
-    return this.priceRepo.find({
+  async getPricesForZone(zone: string): Promise<DayAheadPrice | null> {
+    return this.priceRepo.findOne({
       where: { zone },
       order: { date: 'DESC' },
     });
   }
+  
 
   async getStoredPrices(): Promise<DayAheadPrice[]> {
     return await this.priceRepo.find({

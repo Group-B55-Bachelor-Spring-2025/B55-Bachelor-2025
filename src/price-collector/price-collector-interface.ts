@@ -6,7 +6,8 @@ export interface IPriceCollectorService {
 
   fetchAndStoreAllZones(): Promise<void>;
 
-  getPricesForZone(zone: string): Promise<DayAheadPrice[]>;
+  getPricesForZone(zone: string): Promise<DayAheadPrice | null>;
+
 
   getStoredPrices(): Promise<DayAheadPrice[]>;
   
