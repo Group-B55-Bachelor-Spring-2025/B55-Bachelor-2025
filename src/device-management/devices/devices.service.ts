@@ -1,26 +1,85 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateDeviceDto } from './dto/create-device.dto';
 import { UpdateDeviceDto } from './dto/update-device.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Device } from './entities/device.entity';
+import { Repository, In } from 'typeorm';
+import { DeviceGroupsService } from '../device-groups/device-groups.service';
+import { Role } from '@app/users/enums/role.enum';
 
 @Injectable()
 export class DevicesService {
-  create(createDeviceDto: CreateDeviceDto) {
-    return 'This action adds a new device';
+  constructor(
+    @InjectRepository(Device)
+    private readonly deviceRepository: Repository<Device>,
+    private readonly deviceGroupService: DeviceGroupsService,
+  ) {}
+
+  async create(createDeviceDto: CreateDeviceDto) {
+    const device = this.deviceRepository.create({
+      name: createDeviceDto.name,
+      type: createDeviceDto.type,
+      deviceGroupId: createDeviceDto.deviceGroupId,
+      providerCredentialsId: createDeviceDto.providerCredentialsId,
+      settings: createDeviceDto.settings,
+      externalRef: createDeviceDto.externalRef,
+      status: createDeviceDto.status || 'offline',
+      excludeSmartCtrl: createDeviceDto.excludeSmartCtrl || false,
+    });
+
+    return this.deviceRepository.save(device);
   }
 
-  findAll() {
-    return `This action returns all devices`;
+  async findAll() {
+    return this.deviceRepository.find({
+      relations: ['deviceGroup'],
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} device`;
+  async findAllForUser(role: Role, userId: number) {
+    const userDeviceGroups = await this.deviceGroupService.findAllForUser(
+      role,
+      userId,
+    );
+
+    const deviceGroupIds = userDeviceGroups.map((group) => group.id);
+
+    if (deviceGroupIds.length === 0) {
+      return [];
+    }
+
+    return this.deviceRepository.find({
+      where: {
+        deviceGroupId: In(deviceGroupIds),
+      },
+      relations: ['deviceGroup'],
+    });
   }
 
-  update(id: number, updateDeviceDto: UpdateDeviceDto) {
-    return `This action updates a #${id} device`;
+  async findOne(id: number) {
+    const device = await this.deviceRepository.findOne({
+      where: { id },
+      relations: ['deviceGroup'],
+    });
+
+    if (!device) {
+      throw new NotFoundException(`Device with ID ${id} not found`);
+    }
+
+    return device;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} device`;
+  async update(id: number, updateDeviceDto: UpdateDeviceDto) {
+    const device = await this.findOne(id);
+
+    // Update the device with the new values
+    Object.assign(device, updateDeviceDto);
+
+    return this.deviceRepository.save(device);
+  }
+
+  async remove(id: number) {
+    const device = await this.findOne(id);
+    return this.deviceRepository.remove(device);
   }
 }

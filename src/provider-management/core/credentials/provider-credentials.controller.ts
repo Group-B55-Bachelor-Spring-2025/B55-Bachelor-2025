@@ -7,6 +7,8 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
+  Get,
+  NotFoundException,
 } from '@nestjs/common';
 import { ProviderCredentialsService } from './provider-credentials.service';
 import { ProviderAuthDto } from './dto/provider-auth.dto';
@@ -37,6 +39,25 @@ export class ProviderCredentialsController {
       providerAuthDto,
       user.id,
     );
+  }
+
+  @Get('provider/:providerId/user')
+  async getForCurrentUser(
+    @Param('providerId') providerId: string,
+    @CurrentUser() user: User,
+  ) {
+    const credential = await this.providerCredentialsService.findOneByUserId(
+      +providerId,
+      user.id,
+    );
+
+    if (!credential) {
+      throw new NotFoundException(
+        `No credentials found for this provider and user`,
+      );
+    }
+
+    return credential;
   }
 
   @Delete(':id')

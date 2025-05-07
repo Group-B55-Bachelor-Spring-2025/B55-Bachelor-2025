@@ -33,7 +33,6 @@ export class AddressesController {
     @Body() createAddressDto: CreateAddressDto,
     @CurrentUser() user: User,
   ): Promise<Address> {
-    console.log('User:', user);
     return await this.addressesService.create(createAddressDto, user.id);
   }
 

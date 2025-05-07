@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Injectable,
   Logger,
   UnauthorizedException,
@@ -133,7 +132,6 @@ export class MillService {
         });
 
         const millRes = await req.post<any>('/customer/auth/refresh');
-        console.log('Mill response:', millRes);
 
         const tokens = millRes?.data as MillAuthResponse;
         const updatedCreds = {
@@ -170,7 +168,7 @@ export class MillService {
     const credentials = await this.getMillCredentials(provider, userId);
 
     if (!credentials.accessToken) {
-      throw new BadRequestException('No valid credentials');
+      throw new UnauthorizedException('No valid credentials');
     }
 
     const headers = { Authorization: `Bearer ${credentials.accessToken}` };
@@ -181,10 +179,16 @@ export class MillService {
     });
   }
 
-  async getHouses(provider: Provider, userId: number): Promise<MillHouse[]> {
+  async getHouses(
+    provider: Provider,
+    userId: number,
+    client?: AxiosInstance,
+  ): Promise<MillHouse[]> {
     try {
-      const client = await this.getMillHttpClient(provider, userId);
-      const res = await client.get<MillHousesResponse>('/houses');
+      const httpClient =
+        client || (await this.getMillHttpClient(provider, userId));
+
+      const res = await httpClient.get<MillHousesResponse>('/houses');
 
       // Extract only id and name from each house in the ownHouses array
       return res.data.ownHouses.map((house) => ({
@@ -195,7 +199,7 @@ export class MillService {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
       this.logger.error(`Mill - Get houses error: ${errorMessage}`);
-      throw new BadRequestException(`Failed to get houses: ${errorMessage}`);
+      throw error;
     }
   }
 
@@ -203,10 +207,13 @@ export class MillService {
     provider: Provider,
     userId: number,
     houseId: string,
+    client?: AxiosInstance,
   ): Promise<MillRoomsResponse> {
     try {
-      const client = await this.getMillHttpClient(provider, userId);
-      const res = await client.get<MillRoomsResponse>(
+      const httpClient =
+        client || (await this.getMillHttpClient(provider, userId));
+
+      const res = await httpClient.get<MillRoomsResponse>(
         `/houses/${houseId}/rooms`,
       );
 
@@ -222,7 +229,7 @@ export class MillService {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
       this.logger.error(`Mill - Get rooms error: ${errorMessage}`);
-      throw new BadRequestException(`Failed to get rooms: ${errorMessage}`);
+      throw error;
     }
   }
 
@@ -232,7 +239,6 @@ export class MillService {
   private mapDeviceFromApiResponse = (
     millDeviceFromApi: MillDeviceResponse,
   ): MillDevice => {
-    console.log('Mill device from API:', millDeviceFromApi);
     return {
       id: millDeviceFromApi.deviceId,
       name: millDeviceFromApi.customName,
@@ -251,16 +257,20 @@ export class MillService {
    * @param provider The provider entity
    * @param userId The user ID
    * @param roomId The room ID
+   * @param client Optional HTTP client instance to reuse
    * @returns Array of Mill devices
    */
   async getDevices(
     provider: Provider,
     userId: number,
     roomId: string,
+    client?: AxiosInstance,
   ): Promise<MillDevice[]> {
     try {
-      const client = await this.getMillHttpClient(provider, userId);
-      const res = await client.get<{
+      const httpClient =
+        client || (await this.getMillHttpClient(provider, userId));
+
+      const res = await httpClient.get<{
         devices: MillDeviceResponse[];
       }>(`/rooms/${roomId}/devices`);
 
@@ -275,7 +285,7 @@ export class MillService {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
       this.logger.error(`Mill - Get devices error: ${errorMessage}`);
-      throw new BadRequestException(`Failed to get devices: ${errorMessage}`);
+      throw error;
     }
   }
 
@@ -283,26 +293,39 @@ export class MillService {
     provider: Provider,
     userId: number,
   ): Promise<MillDevice[]> {
-    const houses = await this.getHouses(provider, userId);
-    if (!houses || houses.length === 0) {
-      return [];
-    }
+    try {
+      const client = await this.getMillHttpClient(provider, userId);
 
-    const rooms = await Promise.all(
-      houses.map((house) => this.getRooms(provider, userId, house.id)),
-    );
-    if (!rooms || rooms.length === 0) {
-      return [];
-    }
+      const houses = await this.getHouses(provider, userId, client);
+      if (!houses || houses.length === 0) {
+        return [];
+      }
 
-    const roomIds = rooms.flatMap((r) => r.rooms.map((room) => room.id));
-    const devices = await Promise.all(
-      roomIds.map((roomId) => this.getDevices(provider, userId, roomId)),
-    );
-    if (!devices || devices.length === 0) {
-      return [];
+      const rooms = await Promise.all(
+        houses.map((house) =>
+          this.getRooms(provider, userId, house.id, client),
+        ),
+      );
+      if (!rooms || rooms.length === 0) {
+        return [];
+      }
+
+      const roomIds = rooms.flatMap((r) => r.rooms.map((room) => room.id));
+      const devices = await Promise.all(
+        roomIds.map((roomId) =>
+          this.getDevices(provider, userId, roomId, client),
+        ),
+      );
+      if (!devices || devices.length === 0) {
+        return [];
+      }
+      // TODO: check the independentDevice and add them to the devices array
+      return devices.flatMap((d) => d);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`Mill - Get all devices error: ${errorMessage}`);
+      throw error;
     }
-    // TODO: check the independentDevice and add them to the devices array
-    return devices.flatMap((d) => d);
   }
 }

@@ -9,6 +9,7 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ProvidersService } from './providers.service';
 import { CreateProviderDto } from './dto/create-provider.dto';
@@ -62,7 +63,23 @@ export class ProvidersController {
   }
 
   @Get(':id/provider-devices')
-  async importDevices(@Param('id') id: string, @CurrentUser() user: User) {
-    return await this.providersService.fetchProviderDevices(+id, user.id);
+  async importDevices(
+    @Param('id') providerId: string,
+    @CurrentUser() user: User,
+  ) {
+    try {
+      return await this.providersService.fetchProviderDevices(
+        +providerId,
+        user.id,
+      );
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw new UnauthorizedException(
+          `message: ${error.message}, needsAuthentication: true, providerId: ${providerId}`,
+          { cause: error },
+        );
+      }
+      throw error;
+    }
   }
 }
