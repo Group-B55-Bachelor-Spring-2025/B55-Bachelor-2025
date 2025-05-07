@@ -6,11 +6,13 @@ import {
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  Unique,
 } from 'typeorm';
 import { DeviceGroup } from '../../device-groups/entities/device-group.entity';
 import { ProviderCredential } from 'src/provider-management/core/credentials/entities/provider-credential.entity';
 
 @Entity('devices')
+@Unique(['externalRef', 'providerCredentialsId'])
 export class Device {
   @PrimaryGeneratedColumn()
   id!: number;

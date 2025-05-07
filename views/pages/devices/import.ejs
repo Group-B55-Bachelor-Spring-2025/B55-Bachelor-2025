@@ -1,21 +1,68 @@
-<div id="importDevicesModal" class="hidden">
-  <div class="fixed inset-0 bg-gray-600 bg-opacity-50 z-50"></div>
-  <div class="fixed inset-0 flex items-center justify-center z-60">
-    <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
-      <h2 class="text-xl font-semibold mb-4">Import Devices</h2>
-      <form id="importDevicesForm" action="/devices/import" method="POST">
-        <input type="hidden" name="deviceGroupId" value="<%= deviceGroup.id %>">
-        <div class="mb-4">
-          <label for="provider" class="block text-sm font-medium text-gray-700">Select Provider</label>
-          <select id="provider" name="provider" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring focus:ring-opacity-50">
-            <% providers.forEach(provider => { %>
-              <option value="<%= provider.id %>"><%= provider.name %></option>
-            <% }) %>
-          </select>
-        </div>
-        <button type="submit" class="w-full bg-teal-700 text-white py-2 rounded">Continue</button>
-      </form>
-      <button class="mt-4 w-full text-center text-gray-500 hover:text-gray-700" onclick="hideModal('importDevicesModal')">Cancel</button>
+<div id="importDevicesModal" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden z-50">
+  <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+    <h2 class="text-xl font-semibold mb-4">Import Devices</h2>
+    <form id="importDevicesForm">
+      <input type="hidden" name="deviceGroupId" value="<%= deviceGroup.id %>">
+      <div class="mb-4">
+        <label for="provider" class="block text-sm font-medium text-gray-700">Select Provider</label>
+        <select id="provider" name="provider" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring focus:ring-opacity-50">
+          <% providers.forEach(provider => { %>
+            <option value="<%= provider.id %>"><%= provider.name %></option>
+          <% }) %>
+        </select>
+      </div>
+      <button type="submit" class="w-full bg-teal-700 text-white py-2 rounded">Continue</button>
+    </form>
+    
+    <!-- Add device selection section, initially hidden -->
+    <div id="deviceSelectionSection" class="mt-6 hidden">
+      <h3 class="text-lg font-medium mb-3">Select Devices to Import</h3>
+      <div id="devicesLoading" class="text-center py-4">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-700 mx-auto"></div>
+        <p class="mt-2 text-gray-600">Loading devices...</p>
+      </div>
+      <div id="deviceList" class="max-h-60 overflow-y-auto"></div>
+      <div id="noDevicesMessage" class="hidden py-4 text-center text-gray-600">
+        No devices found for this provider.
+      </div>
+      <button id="importSelectedDevices" class="w-full bg-teal-700 text-white py-2 rounded mt-4 hidden">
+        Import Selected Devices
+      </button>
     </div>
+    
+    <!-- Add provider authentication section, initially hidden -->
+    <div id="providerAuthSection" class="mt-6 hidden">
+      <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <div class="ml-3">
+            <p class="text-sm text-yellow-700" id="authErrorMessage">
+              Authentication required for this provider.
+            </p>
+          </div>
+        </div>
+      </div>
+      <h3 class="text-lg font-medium mb-3">Connect to Provider</h3>
+      <p class="text-sm text-gray-600 mb-4">Please enter your credentials to connect to this provider.</p>
+      <form id="providerAuthForm">
+        <input type="hidden" id="authProviderId" name="providerId">
+        <div class="mb-3">
+          <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+          <input type="text" id="username" name="username" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring focus:ring-opacity-50" required>
+        </div>
+        <div class="mb-4">
+          <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+          <input type="password" id="password" name="password" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring focus:ring-opacity-50" required>
+        </div>
+        <button type="submit" class="w-full bg-teal-700 text-white py-2 rounded">Connect Provider</button>
+      </form>
+    </div>
+    
+    <button class="mt-4 w-full text-center text-gray-500 hover:text-gray-700" onclick="hideModal('importDevicesModal')">Cancel</button>
   </div>
 </div>
+<script src="/js/importDevices.js"></script>
