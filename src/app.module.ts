@@ -1,19 +1,23 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
 import { LocationManagementModule } from './location-management/location-management.module';
 import { AddressesModule } from './location-management/addresses/addresses.module';
-import { ProvidersModule } from './provider-management/providers/providers.module';
+import { ProvidersModule } from './provider-management/core/providers/providers.module';
 import { DeviceGroupsModule } from './device-management/device-groups/device-groups.module';
 import { DevicesModule } from './device-management/devices/devices.module';
-import { ProviderCredentialsModule } from './provider-management/provider-credentials/provider-credentials.module';
+import { ProviderCredentialsModule } from './provider-management/core/credentials/provider-credentials.module';
 import { SmartControlSettingsModule } from './smart-control/smart-control-settings/smart-control-settings.module';
 import { PriceCollectorModule } from './price-collector/price-collector.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import * as Joi from 'joi';
 import { PriceAnalyzerModule } from './price-analyzer/price-analyzer.module';
+import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
+import * as cookieParser from 'cookie-parser';
+import { RegionsModule } from './location-management/regions/regions.module';
 
 @Module({
   imports: [
@@ -37,6 +41,8 @@ import { PriceAnalyzerModule } from './price-analyzer/price-analyzer.module';
         abortEarly: true,
       },
     }),
+    UsersModule,
+    AuthModule,
     DatabaseModule,
     AddressesModule,
     LocationManagementModule,
@@ -48,8 +54,13 @@ import { PriceAnalyzerModule } from './price-analyzer/price-analyzer.module';
     PriceCollectorModule,
     ScheduleModule.forRoot(),
     PriceAnalyzerModule,
+    RegionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(cookieParser()).forRoutes('*');
+  }
+}

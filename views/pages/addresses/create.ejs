@@ -1,0 +1,93 @@
+<div id="addressModal" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden z-50">
+  <div class="bg-white p-6 rounded-lg w-full max-w-md">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-bold">Add New Address</h2>
+      <button id="closeModal" class="text-gray hover:text-gray-700 cursor-pointer text-xl">x</button>
+    </div>   
+    <form id="addressForm" action="/addresses" method="POST" class="mt-4 py-4 flex flex-col gap-4">
+      <div>
+        <input type="text" id="name" name="name" placeholder="Name" required class="w-full p-2 border rounded">
+      </div>
+      <div>
+        <input type="text" id="address" name="address" placeholder="Address" required class="w-full p-2 border rounded">
+      </div>
+      <div>
+        <input type="text" id="city" name="city" placeholder="City" required class="w-full p-2 border rounded">
+      </div>
+      <div class="mb-4">
+        <input type="text" id="zipCode" name="zipCode" placeholder="Postal Code" class="w-full p-2 border rounded">
+      </div>
+      <div class="mb-4">
+        <input type="text" id="country" name="country" placeholder="Country" class="w-full p-2 border rounded">
+      </div>
+      <div>
+        <select id="regionCode" name="regionCode" required class="w-full p-2 border rounded">
+          <option value="" disabled selected>Select Region</option>
+          <% regions.forEach(region => { %>
+            <option value="<%= region.code %>"><%= region.name %></option>
+          <% }); %>
+        </select>
+      </div>
+      <button type="submit" class="float-right px-4 py-2 bg-teal-700 text-white rounded cursor-pointer">Add Address</button>
+    </form>
+  </div>
+</div>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('addressModal');
+    const showModalBtn = document.getElementById('showAddressModal');
+    const showModalEmptyBtn = document.getElementById('showAddressModalEmpty');
+    const closeModalBtn = document.getElementById('closeModal');
+
+    function showModal() {
+      modal.classList.remove('hidden');
+    }
+    
+    function hideModal() {
+      modal.classList.add('hidden');
+    }
+    
+    if (showModalBtn) showModalBtn.addEventListener('click', showModal);
+    if (showModalEmptyBtn) showModalEmptyBtn.addEventListener('click', showModal);
+    closeModalBtn.addEventListener('click', hideModal);
+    
+    modal.addEventListener('click', function(event) {
+      if (event.target === modal) {
+        hideModal();
+      }
+    });
+
+
+    const form = document.getElementById('addressForm');
+    form.addEventListener('submit', function(event) {
+      event.preventDefault();
+      const formData = new FormData(form);
+      const formObject = {};
+      formData.forEach((value, key) => {
+        formObject[key] = value;
+      });
+      
+      fetch('/addresses', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(formObject)
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        if (data) { 
+          if (data.error) {
+            alert(data.error);
+          }
+          window.location.href = '/';
+        } else {
+          alert('Error adding address');
+        }
+      })
+      .catch(error => console.error('Error:', error));
+    });
+  });
+</script>
