@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PriceCollectorService } from './price-collector.service';
+import { PriceCollectorService } from './nordpool-service';
 
 describe('PriceCollectorService', () => {
   let service: PriceCollectorService;
