@@ -1,26 +1,111 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, In } from 'typeorm';
 import { CreateDeviceGroupDto } from './dto/create-device-group.dto';
 import { UpdateDeviceGroupDto } from './dto/update-device-group.dto';
+import { DeviceGroup } from './entities/device-group.entity';
+import { AddressesService } from '@app/location-management/addresses/addresses.service';
+import { Role } from '@app/users/enums/role.enum';
 
 @Injectable()
 export class DeviceGroupsService {
-  create(createDeviceGroupDto: CreateDeviceGroupDto) {
-    return 'This action adds a new deviceGroup';
+  constructor(
+    @InjectRepository(DeviceGroup)
+    private deviceGroupsRepository: Repository<DeviceGroup>,
+    private addressService: AddressesService,
+  ) {}
+
+  async create(
+    createDeviceGroupDto: CreateDeviceGroupDto,
+  ): Promise<DeviceGroup> {
+    const address = await this.addressService.findOne(
+      createDeviceGroupDto.addressId,
+    );
+
+    if (!address) {
+      throw new BadRequestException(
+        'Invalid addressId: Address does not exist',
+      );
+    }
+
+    const deviceGroup =
+      this.deviceGroupsRepository.create(createDeviceGroupDto);
+    return await this.deviceGroupsRepository.save(deviceGroup);
   }
 
-  findAll() {
-    return `This action returns all deviceGroups`;
+  async findAll(): Promise<DeviceGroup[]> {
+    return await this.deviceGroupsRepository.find({
+      relations: ['address', 'devices'],
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} deviceGroup`;
+  async findByAddressId(addressId: number): Promise<DeviceGroup[]> {
+    return await this.deviceGroupsRepository.find({
+      where: { addressId },
+      relations: ['devices'],
+    });
   }
 
-  update(id: number, updateDeviceGroupDto: UpdateDeviceGroupDto) {
-    return `This action updates a #${id} deviceGroup`;
+  async findOne(id: number): Promise<DeviceGroup | null> {
+    return await this.deviceGroupsRepository.findOne({
+      where: { id },
+      relations: ['address', 'devices'],
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} deviceGroup`;
+  async update(
+    id: number,
+    updateDeviceGroupDto: UpdateDeviceGroupDto,
+  ): Promise<DeviceGroup | null> {
+    await this.deviceGroupsRepository.update(id, updateDeviceGroupDto);
+    return this.findOne(id);
+  }
+
+  async remove(id: number): Promise<void> {
+    await this.deviceGroupsRepository.delete(id);
+  }
+
+  async findOneForUser(
+    userId: number,
+    id: number,
+  ): Promise<DeviceGroup | null> {
+    const deviceGroup = await this.deviceGroupsRepository.findOne({
+      where: { id },
+      relations: ['address', 'devices'],
+    });
+
+    if (!deviceGroup) {
+      throw new BadRequestException('Device group not found');
+    }
+
+    const address = await this.addressService.findOne(deviceGroup.addressId);
+
+    if (!address || address.userId !== userId) {
+      throw new ForbiddenException('Address does not belong to user');
+    }
+
+    return deviceGroup;
+  }
+
+  async findAllForUser(role: Role, userId: number): Promise<DeviceGroup[]> {
+    // Get all addresses that belong to the user
+    const userAddresses = await this.addressService.findAll(role, userId);
+
+    if (userAddresses && userAddresses.length === 0) {
+      return [];
+    }
+
+    const addressIds = userAddresses.map((address) => address.id);
+
+    return this.deviceGroupsRepository.find({
+      where: {
+        addressId: In(addressIds),
+      },
+      relations: ['address', 'devices'],
+    });
   }
 }
