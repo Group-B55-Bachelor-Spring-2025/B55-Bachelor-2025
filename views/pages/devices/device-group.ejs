@@ -1,0 +1,47 @@
+<div class="flex justify-between items-center my-8">
+  <h1 class="text-3xl capitalize"><%= deviceGroup.name%><</h1>
+  <button id="showImportModal" class="bg-teal-700 rounded p-2 text-white cursor-pointer" onclick="document.getElementById('importDevicesModal').classList.remove('hidden')">Import Devices</button>
+</div>
+<h6 class="mb-4 text-lg font-medium text-gray-800">Devices</h6>
+<% if (deviceGroup?.devices?.length > 0) { %>
+  <table class="min-w-full divide-y divide-gray-200">
+    <thead class="bg-gray-50">
+      <tr>
+        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+        <th scope="col" class="relative px-6 py-3">
+          <span class="sr-only">View</span>
+        </th>
+      </tr>
+    </thead>
+    <tbody class="bg-white divide-y divide-gray-200">
+      <% deviceGroup.devices.forEach(device => { %>
+        <tr>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <h6 class="text-sm font-medium text-gray-900"><%= device.name %></h6>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <p class="text-sm text-gray-500"><%= device.type %></p>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span class="text-sm text-gray-500"><%= device.status %></span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+            <a href="/devices/<%= device.id %>" class="text-blue-600 hover:text-blue-900">View</a>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+<% } else { %>
+  <div class="empty-state">
+    <p>You don't have any devices in this group yet.</p>
+    <p>Import your devices from provider</p>
+  </div>
+<% } %>
+<%- include('./import') %>
