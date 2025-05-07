@@ -10,9 +10,12 @@ import { DeviceGroupsModule } from './device-management/device-groups/device-gro
 import { DevicesModule } from './device-management/devices/devices.module';
 import { ProviderCredentialsModule } from './provider-management/core/credentials/provider-credentials.module';
 import { SmartControlSettingsModule } from './smart-control/smart-control-settings/smart-control-settings.module';
+import { PriceCollectorModule } from './price-collector/price-collector.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import * as Joi from 'joi';
+import { PriceAnalyzerModule } from './price-analyzer/price-analyzer.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
-import * as Joi from 'joi';
 import * as cookieParser from 'cookie-parser';
 import { RegionsModule } from './location-management/regions/regions.module';
 
@@ -48,6 +51,9 @@ import { RegionsModule } from './location-management/regions/regions.module';
     DeviceGroupsModule,
     DevicesModule,
     SmartControlSettingsModule,
+    PriceCollectorModule,
+    ScheduleModule.forRoot(),
+    PriceAnalyzerModule,
     RegionsModule,
   ],
   controllers: [AppController],
