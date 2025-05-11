@@ -18,24 +18,4 @@
     
     <%- include('./partials/footer') %>
 </body>
-<script>
-    function logout() {
-        fetch('/auth/logout', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => {
-            if (response.ok) {
-                window.location.href = '/';
-            } else {
-                console.error('Logout failed');
-            }
-        })
-        .catch(error => {
-            console.error('Error during logout:', error);
-        });
-    } 
-</script>
 </html>
