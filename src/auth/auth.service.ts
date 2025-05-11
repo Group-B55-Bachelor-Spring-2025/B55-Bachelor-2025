@@ -32,11 +32,8 @@ export class AuthService implements IAuthService {
       throw new ConflictException('Email already in use');
     }
 
-    const hashedPassword = await bcrypt.hash(registerDto.password, 10);
-
     await this.usersService.create({
       ...registerDto,
-      password: hashedPassword,
       role: Role.USER,
     });
 
