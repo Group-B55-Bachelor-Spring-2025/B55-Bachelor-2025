@@ -60,6 +60,7 @@ export class AppController {
     return res.render('pages/auth/login', {
       title: 'Login',
       layout: 'layouts/auth-layout',
+      error: false,
     });
   }
 

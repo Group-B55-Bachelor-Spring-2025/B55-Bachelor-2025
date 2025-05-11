@@ -1,88 +1,86 @@
-import {
-  Injectable,
-  CanActivate,
-  ExecutionContext,
-  UnauthorizedException,
-} from '@nestjs/common';
-import { Request, Response } from 'express';
+import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
+import { Request as ExpressRequest, Response } from 'express';
 import { TokensService } from '../tokens/tokens.service';
 import { TokenType } from '../entities/token.entity';
-import { Role } from '@app/users/enums/role.enum';
+import { JwtService } from '@nestjs/jwt';
+import { Reflector } from '@nestjs/core';
+import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
+
+// Extended Request interface with session property
+interface Request extends ExpressRequest {
+  session?: {
+    returnTo?: string;
+    [key: string]: any;
+  };
+  user?: any;
+}
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private tokensService: TokensService) {}
+  constructor(
+    private tokensService: TokensService,
+    private jwtService: JwtService,
+    private reflector: Reflector,
+  ) {}
+
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    if (isPublic) {
+      return true;
+    }
+
     const response = context.switchToHttp().getResponse<Response>();
     const request = context.switchToHttp().getRequest<Request>();
 
-    // Determine if this is an API request
-    const isApiRequest =
-      request.headers['accept']?.includes('application/json') ||
-      request.headers['x-requested-with'] === 'XMLHttpRequest';
+    const accessToken = request.cookies?.['accessToken'] as string | undefined;
+    const refreshToken = request.cookies?.['refreshToken'] as
+      | string
+      | undefined;
 
-    // Try to get token from different sources
-    let accessToken: string | undefined;
+    // Save the originally requested URL for redirecting back after auth
+    if (request.originalUrl) {
+      request.session = request.session || {};
+      request.session.returnTo = request.originalUrl;
+    }
 
-    // 1. Check cookies first
-    accessToken = request.cookies?.['accessToken'] as string | undefined;
-
-    // 2. If not in cookies and it's an API request, check Authorization header
-    if (!accessToken && isApiRequest) {
-      const authHeader = request.headers.authorization;
-      if (authHeader && authHeader.startsWith('Bearer ')) {
-        accessToken = authHeader.substring(7); // Remove 'Bearer ' prefix
-      }
+    if (!accessToken) {
+      response.redirect('/login');
+      return false;
     }
 
     try {
-      // If no token found at all
-      if (!accessToken) {
-        if (isApiRequest) {
-          throw new UnauthorizedException('Authentication required');
-        } else {
-          response.redirect('/login');
-          return false;
-        }
-      }
-
-      // Verify token
-      const payload = await this.tokensService.verifyToken(
+      // Verify the JWT signature and expiration
+      const decoded = this.jwtService.verify(accessToken);
+      // Verify token exists in database and is not revoked
+      const tokenValid = await this.tokensService.verifyToken(
         accessToken,
         TokenType.ACCESS,
       );
 
-      if (!payload) {
-        if (isApiRequest) {
-          throw new UnauthorizedException('Invalid token');
-        } else {
-          response.redirect('/login');
-          return false;
-        }
+      if (!tokenValid) {
+        throw new Error('Token has been revoked');
       }
 
-      const _decoded = this.tokensService.decodedToken(accessToken);
-
-      // Create the user object
       const user = {
-        id: _decoded.sub,
-        email: _decoded.email,
-        role: _decoded.role as Role,
-        name: _decoded.name,
+        id: decoded.sub,
+        email: decoded.email,
+        role: decoded.role,
+        name: decoded.name,
       };
 
       request.user = user;
-
       return true;
-    } catch (error) {
-      if (isApiRequest) {
-        const errorMessage =
-          error instanceof Error ? error.message : 'Unknown error';
-        throw new UnauthorizedException(
-          `Authentication failed: ${errorMessage}`,
-        );
+    } catch (jwtError) {
+      if (refreshToken) {
+        response.redirect('/auth/refresh');
+        return false;
       } else {
-        // For browser clients, redirect to login
+        response.clearCookie('accessToken');
+        response.clearCookie('refreshToken');
+
         response.redirect('/login');
         return false;
       }
