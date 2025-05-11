@@ -57,7 +57,11 @@ export class AppController {
     if (req.cookies && req.cookies['accessToken']) {
       return res.redirect('/');
     }
-    return res.render('pages/auth/login', { title: 'Login' });
+    return res.render('pages/auth/login', {
+      title: 'Login',
+      layout: 'layouts/auth-layout',
+      error: false,
+    });
   }
 
   @Get('register')
@@ -65,6 +69,9 @@ export class AppController {
     if (req.cookies && req.cookies['accessToken']) {
       return res.redirect('/');
     }
-    return res.render('pages/auth/register', { title: 'Register' });
+    return res.render('pages/auth/register', {
+      title: 'Register',
+      layout: 'layouts/auth-layout',
+    });
   }
 }
