@@ -2,25 +2,26 @@ import { Module } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-
 import { PriceCollectorService } from './nordpool-service';
 import { PriceCollectorController } from './price-collector.controller';
 import { DayAheadPrice } from './day-ahead-price.entity';
-import { IPriceCollectorService } from './price-collector-interface';
+import { RegionsModule } from '@app/location-management/regions/regions.module';
 
 @Module({
   imports: [
     HttpModule,
     ConfigModule,
     TypeOrmModule.forFeature([DayAheadPrice]),
+    RegionsModule,
   ],
   controllers: [PriceCollectorController],
   providers: [
+    PriceCollectorService,
     {
       provide: 'PriceCollectorService',
-      useClass: PriceCollectorService,
+      useExisting: PriceCollectorService,
     },
   ],
-  exports: ['PriceCollectorService'],
+  exports: [PriceCollectorService, 'PriceCollectorService'],
 })
 export class PriceCollectorModule {}
