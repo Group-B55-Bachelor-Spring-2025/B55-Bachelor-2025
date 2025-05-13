@@ -5,7 +5,7 @@ import { IPriceDecisionService } from './price-analyzer.interface';
 @Injectable()
 export class PriceAnalyzerService implements IPriceDecisionService {
 
-  shouldActivate(data: DayAheadPrice, manualOverride: boolean, options: { percentile: number }): boolean {
+  checkIfPriceIsAcceptable(data: DayAheadPrice, manualOverride: boolean, options: { percentile: number }): boolean {
     if (manualOverride) return true;
   
     if (!data?.prices?.length || data.prices.length !== 24) return false;

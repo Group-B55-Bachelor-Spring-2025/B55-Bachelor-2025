@@ -32,7 +32,7 @@ export class PriceAnalyzerController {
     const manualOverride = override === 'true';
     const parsedPercentile = percentile ? parseInt(percentile, 10) : 75;
 
-    const result = this.analyzerService.shouldActivate(mockPriceData, manualOverride, {
+    const result = this.analyzerService.checkIfPriceIsAcceptable(mockPriceData, manualOverride, {
       percentile: parsedPercentile,
     });
 
@@ -71,7 +71,7 @@ export class PriceAnalyzerController {
       parsedPercentile,
     );
   
-    const shouldActivate = this.analyzerService.shouldActivate(latest, manualOverride, {
+    const shouldActivate = this.analyzerService.checkIfPriceIsAcceptable(latest, manualOverride, {
       percentile: parsedPercentile,
     });
   
