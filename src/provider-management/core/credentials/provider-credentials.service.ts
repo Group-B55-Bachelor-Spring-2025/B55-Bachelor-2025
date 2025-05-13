@@ -125,4 +125,19 @@ export class ProviderCredentialsService {
   remove(id: number) {
     return `This action removes a #${id} providerCredential`;
   }
+
+  async findAllByProviderId(providerId: number) {
+    const credentials = await this.providerCredentialRepository.find({
+      where: { providerId },
+      relations: ['user'],
+    });
+
+    if (!credentials) {
+      throw new NotFoundException(
+        `No credentials found for provider with ID ${providerId}`,
+      );
+    }
+
+    return credentials;
+  }
 }

@@ -289,6 +289,31 @@ export class MillService {
     }
   }
 
+  async getDevice(
+    provider: Provider,
+    userId: number,
+    deviceId: string,
+  ): Promise<MillDevice> {
+    try {
+      const client = await this.getMillHttpClient(provider, userId);
+
+      const res = await client.get<MillDeviceResponse>(
+        `/devices/${deviceId}/data`,
+      );
+
+      if (!res.data) {
+        throw new Error('Device not found');
+      }
+
+      return this.mapDeviceFromApiResponse(res.data);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`Mill - Get device error: ${errorMessage}`);
+      throw error;
+    }
+  }
+
   async getAllDevices(
     provider: Provider,
     userId: number,

@@ -4,6 +4,7 @@ import {
   IsOptional,
   IsBoolean,
   MaxLength,
+  IsDate,
 } from 'class-validator';
 
 export class CreateDeviceDto {
@@ -39,4 +40,8 @@ export class CreateDeviceDto {
   @IsBoolean()
   @IsOptional()
   excludeSmartCtrl?: boolean;
+
+  @IsDate()
+  @IsOptional()
+  lastSync?: Date;
 }
