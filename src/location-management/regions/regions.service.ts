@@ -27,4 +27,11 @@ export class RegionsService implements IRegionsService {
     }
     return region;
   }
+
+  async getAllActiveRegions(): Promise<Region[]> {
+    return await this.regionRepository.find({
+      where: { active: true },
+      order: { name: 'ASC' },
+    });
+  }
 }

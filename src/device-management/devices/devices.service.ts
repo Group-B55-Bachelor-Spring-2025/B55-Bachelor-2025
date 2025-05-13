@@ -69,6 +69,17 @@ export class DevicesService {
     return device;
   }
 
+  async findAllByCredentialId(id: number): Promise<Device[]> {
+    const devices = await this.deviceRepository.find({
+      where: { providerCredentialsId: id },
+      relations: ['deviceGroup'],
+    });
+    if (!devices) {
+      throw new NotFoundException(`Devices with credential ID ${id} not found`);
+    }
+    return devices;
+  }
+
   async update(id: number, updateDeviceDto: UpdateDeviceDto) {
     const device = await this.findOne(id);
 

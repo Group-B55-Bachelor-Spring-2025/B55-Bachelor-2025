@@ -18,6 +18,7 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import * as cookieParser from 'cookie-parser';
 import { RegionsModule } from './location-management/regions/regions.module';
+import { QueueModule } from './queue/queue.module';
 
 @Module({
   imports: [
@@ -30,6 +31,10 @@ import { RegionsModule } from './location-management/regions/regions.module';
         DB_USER: Joi.string().required(),
         DB_PASS: Joi.string().required(),
         DB_NAME: Joi.string().required(),
+
+        // Redis
+        REDIS_HOST: Joi.string().default('localhost'),
+        REDIS_PORT: Joi.number().default(6379),
 
         // Application
         NODE_ENV: Joi.string()
@@ -55,6 +60,7 @@ import { RegionsModule } from './location-management/regions/regions.module';
     ScheduleModule.forRoot(),
     PriceAnalyzerModule,
     RegionsModule,
+    QueueModule,
   ],
   controllers: [AppController],
   providers: [AppService],

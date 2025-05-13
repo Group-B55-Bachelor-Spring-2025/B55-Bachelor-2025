@@ -34,6 +34,14 @@ export class ProvidersService implements IProviderService {
     return provider;
   }
 
+  async findByName(name: string): Promise<Provider> {
+    const provider = await this.providerRepository.findOneBy({ name });
+    if (!provider) {
+      throw new NotFoundException(`Provider with name ${name} not found`);
+    }
+    return provider;
+  }
+
   async update(
     id: number,
     updateProviderDto: UpdateProviderDto,

@@ -1,11 +1,10 @@
 import { Controller, Get, Param, Inject } from '@nestjs/common';
 import { IPriceCollectorService } from './price-collector-interface';
-
 @Controller('price-collector')
 export class PriceCollectorController {
   constructor(
     @Inject('PriceCollectorService')
-    private readonly priceCollectorService: IPriceCollectorService
+    private readonly priceCollectorService: IPriceCollectorService,
   ) {}
 
   @Get('db/showall')
