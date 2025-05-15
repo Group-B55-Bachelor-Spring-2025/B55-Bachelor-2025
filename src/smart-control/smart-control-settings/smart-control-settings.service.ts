@@ -100,7 +100,7 @@ export class SmartControlSettingsService {
 
     const peakHours = zonePrices
       .map((price, index) => ({ price, index }))
-      .sort((a, b) => a.price - b.price)
+      .sort((a, b) => b.price - a.price)
       .slice(0, peakHoursCount)
       .map((item) => item.index);
 
