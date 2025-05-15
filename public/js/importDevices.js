@@ -205,12 +205,13 @@ document.addEventListener('DOMContentLoaded', function () {
         for (const device of selectedDevices) {
           const deviceData = {
             name: device.name,
-            type: device.type || 'climate',
+            type: device.subDomainId,
             deviceGroupId: parseInt(deviceGroupId),
             providerCredentialsId: providerCredentialsId,
             externalRef: device.id.toString(),
             status: device.offline ? 'offline' : 'online',
             settings: JSON.stringify(device),
+            targetTemperature: device.targetTemperature,
           };
 
           try {

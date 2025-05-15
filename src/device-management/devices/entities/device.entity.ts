@@ -44,6 +44,12 @@ export class Device {
   @Column({ name: 'exclude_smart_ctrl', default: false })
   excludeSmartCtrl!: boolean;
 
+  @Column()
+  targetTemperature?: number;
+
+  @Column()
+  optimized?: boolean;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 
