@@ -2,6 +2,7 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { PriceCollectorQueue } from './jobs/price-collector/price-collector.queue';
 import { TokenCleanupQueue } from './jobs/token-cleanup/token-cleanup.queue';
 import { DeviceUpdateQueue } from './jobs/device-update/device-update.queue';
+import { PeakHourAdjustmentQueue } from './jobs/peak-hour-adjustment/peak-hour-adjustment.queue';
 
 @Injectable()
 export class QueueInitializerService implements OnModuleInit {
@@ -9,6 +10,7 @@ export class QueueInitializerService implements OnModuleInit {
     private readonly priceCollectorQueue: PriceCollectorQueue,
     private readonly tokenCleanupQueue: TokenCleanupQueue,
     private readonly deviceUpdateQueue: DeviceUpdateQueue,
+    private readonly peakHourAdjustmentQueue: PeakHourAdjustmentQueue,
   ) {}
 
   /**
@@ -18,6 +20,7 @@ export class QueueInitializerService implements OnModuleInit {
     await this.initializeTokenCleanupQueue();
     await this.initializePriceCollectorQueue();
     await this.initializeDeviceUpdateQueue();
+    await this.initializePeakHourAdjustmentQueue();
 
     console.log('🚀 All queue jobs have been scheduled');
   }
@@ -40,6 +43,14 @@ export class QueueInitializerService implements OnModuleInit {
     console.log('🔄 Scheduled device update job (runs every 5 minutes)');
   }
 
+  // Schedule the peak hour temperature adjustment jobs
+  private async initializePeakHourAdjustmentQueue(): Promise<void> {
+    await this.peakHourAdjustmentQueue.scheduleHourlyAdjustments();
+    console.log(
+      '🌡️ Scheduled peak hour temperature adjustment jobs (hourly) and cleanup (daily)',
+    );
+  }
+
   // for testing, manually trigger an immediate price fetch
   async triggerImmediatePriceFetch(): Promise<void> {
     await this.priceCollectorQueue.addImmediateJob();
@@ -50,5 +61,11 @@ export class QueueInitializerService implements OnModuleInit {
   async triggerImmediateDeviceUpdate(): Promise<void> {
     await this.deviceUpdateQueue.triggerImmediateUpdate();
     console.log('Immediate device update job added to queue');
+  }
+
+  // for testing, manually trigger an immediate temperature adjustment
+  async triggerImmediateTemperatureAdjustment(): Promise<void> {
+    await this.peakHourAdjustmentQueue.addImmediateAdjustmentJob();
+    console.log('Immediate temperature adjustment job added to queue');
   }
 }

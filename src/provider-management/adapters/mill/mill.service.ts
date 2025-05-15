@@ -353,4 +353,44 @@ export class MillService {
       throw error;
     }
   }
+
+  /**
+   * Sets the temperature for a specific Mill device.
+   *
+   * @param deviceRef - The unique identifier reference for the Mill device
+   * @param deviceType - The category type of the Mill device (e.g., 'Heaters')
+   * @param provider - The provider configuration containing authentication details
+   * @param userId - The ID of the user who owns or has access to the device
+   * @param temperature - The target temperature to set on the device (in degrees)
+   *
+   * @throws Will throw an error if the HTTP request to Mill API fails
+   * @returns A Promise that resolves when the temperature has been successfully set
+   */
+  async setTemperature(
+    deviceRef: string,
+    deviceType: string,
+    provider: Provider,
+    userId: number,
+    temperature: number,
+  ): Promise<void> {
+    try {
+      const client = await this.getMillHttpClient(provider, userId);
+
+      const payload = {
+        deviceType: deviceType || 'Heaters',
+        enabled: true,
+        settings: {
+          operation_mode: 'control_individually',
+          temperature_normal: temperature,
+        },
+      };
+
+      await client.patch(`/devices/${deviceRef}/settings`, payload);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`Mill - Set temperature error: ${errorMessage}`);
+      throw error;
+    }
+  }
 }

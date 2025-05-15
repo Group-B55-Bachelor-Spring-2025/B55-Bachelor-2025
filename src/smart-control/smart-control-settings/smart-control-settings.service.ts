@@ -82,4 +82,32 @@ export class SmartControlSettingsService {
     const setting = await this.findOne(id);
     await this.smartControlSettingsRepository.remove(setting);
   }
+
+  async isPeakHour(
+    smartControlSetting: SmartControlSetting,
+    zonePrices: number[],
+    date: Date,
+  ): Promise<boolean> {
+    const currentHour = date.getUTCHours();
+
+    if (!smartControlSetting.enabled) {
+      return false;
+    }
+
+    const peakHoursCount = Math.round(
+      (smartControlSetting.energySavingsPercentage * 24) / 100,
+    );
+
+    const peakHours = zonePrices
+      .map((price, index) => ({ price, index }))
+      .sort((a, b) => a.price - b.price)
+      .slice(0, peakHoursCount)
+      .map((item) => item.index);
+
+    if (peakHours.includes(currentHour)) {
+      return true;
+    }
+
+    return false;
+  }
 }

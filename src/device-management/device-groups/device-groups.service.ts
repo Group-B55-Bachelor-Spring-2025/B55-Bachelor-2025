@@ -118,4 +118,17 @@ export class DeviceGroupsService {
       relations: ['address', 'devices'],
     });
   }
+
+  async findAllSmartControlEnabled(): Promise<DeviceGroup[]> {
+    return await this.deviceGroupsRepository
+      .createQueryBuilder('deviceGroup')
+      .leftJoinAndSelect('deviceGroup.address', 'address')
+      .leftJoinAndSelect('deviceGroup.devices', 'devices')
+      .leftJoinAndSelect(
+        'deviceGroup.smartControlSettings',
+        'smartControlSettings',
+      )
+      .where('smartControlSettings.enabled = :enabled', { enabled: true })
+      .getMany();
+  }
 }
