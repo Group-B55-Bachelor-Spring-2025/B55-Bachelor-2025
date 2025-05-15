@@ -77,6 +77,8 @@ export class DeviceUpdateProcessor extends WorkerHost {
                   targetTemperature: millDevice.targetTemperature,
                   ...JSON.parse(device.settings || '{}'),
                 }),
+                targetTemperature:
+                  millDevice.targetTemperature || device.targetTemperature,
                 lastSync: new Date(),
               };
 

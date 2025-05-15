@@ -44,4 +44,12 @@ export class CreateDeviceDto {
   @IsDate()
   @IsOptional()
   lastSync?: Date;
+
+  @IsNumber()
+  @IsOptional()
+  targetTemperature?: number;
+
+  @IsBoolean()
+  @IsOptional()
+  optimized?: boolean;
 }

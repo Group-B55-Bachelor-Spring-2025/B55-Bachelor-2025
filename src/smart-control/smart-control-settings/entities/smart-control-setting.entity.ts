@@ -29,16 +29,16 @@ export class SmartControlSetting {
   nightShiftEnabled!: boolean;
 
   @Column({ name: 'night_shift_start', nullable: true })
-  nightShiftStart!: Date;
+  nightShiftStart?: Date;
 
   @Column({ name: 'night_shift_duration', nullable: true })
-  nightShiftDuration!: number;
+  nightShiftDuration?: number;
 
   @Column({ name: 'night_shift_saving_percentage', nullable: true })
-  nightShiftSavingPercentage!: number;
+  nightShiftSavingPercentage?: number;
 
   @Column({ name: 'day_of_week', nullable: true })
-  dayOfWeek!: number;
+  dayOfWeek?: number;
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;

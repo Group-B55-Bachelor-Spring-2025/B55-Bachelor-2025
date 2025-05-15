@@ -10,6 +10,7 @@ import { UpdateDeviceGroupDto } from './dto/update-device-group.dto';
 import { DeviceGroup } from './entities/device-group.entity';
 import { AddressesService } from '@app/location-management/addresses/addresses.service';
 import { Role } from '@app/users/enums/role.enum';
+import { SmartControlSettingsService } from '@app/smart-control/smart-control-settings/smart-control-settings.service';
 
 @Injectable()
 export class DeviceGroupsService {
@@ -17,6 +18,7 @@ export class DeviceGroupsService {
     @InjectRepository(DeviceGroup)
     private deviceGroupsRepository: Repository<DeviceGroup>,
     private addressService: AddressesService,
+    private smartControlSettingsService: SmartControlSettingsService,
   ) {}
 
   async create(
@@ -34,7 +36,15 @@ export class DeviceGroupsService {
 
     const deviceGroup =
       this.deviceGroupsRepository.create(createDeviceGroupDto);
-    return await this.deviceGroupsRepository.save(deviceGroup);
+    const savedDeviceGroup =
+      await this.deviceGroupsRepository.save(deviceGroup);
+
+    // Create default smart control settings for this device group
+    await this.smartControlSettingsService.createDefaultForDeviceGroup(
+      savedDeviceGroup.id,
+    );
+
+    return savedDeviceGroup;
   }
 
   async findAll(): Promise<DeviceGroup[]> {
@@ -107,5 +117,18 @@ export class DeviceGroupsService {
       },
       relations: ['address', 'devices'],
     });
+  }
+
+  async findAllSmartControlEnabled(): Promise<DeviceGroup[]> {
+    return await this.deviceGroupsRepository
+      .createQueryBuilder('deviceGroup')
+      .leftJoinAndSelect('deviceGroup.address', 'address')
+      .leftJoinAndSelect('deviceGroup.devices', 'devices')
+      .leftJoinAndSelect(
+        'deviceGroup.smartControlSettings',
+        'smartControlSettings',
+      )
+      .where('smartControlSettings.enabled = :enabled', { enabled: true })
+      .getMany();
   }
 }

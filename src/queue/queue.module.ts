@@ -21,6 +21,11 @@ import { ProvidersModule } from '@app/provider-management/core/providers/provide
 import { MillModule } from '@app/provider-management/adapters/mill/mill.module';
 import { ProviderCredentialsModule } from '@app/provider-management/core/credentials/provider-credentials.module';
 import { DevicesModule } from '@app/device-management/devices/devices.module';
+import { PEAK_HOUR_ADJUSTMENT_QUEUE } from './jobs/peak-hour-adjustment/peak-hour-adjustment.queue';
+import { PeakHourAdjustmentQueue } from './jobs/peak-hour-adjustment/peak-hour-adjustment.queue';
+import { PeakHourAdjustmentProcessor } from './jobs/peak-hour-adjustment/peak-hour-adjustment.processor';
+import { DeviceGroupsModule } from '@app/device-management/device-groups/device-groups.module';
+import { SmartControlSettingsModule } from '@app/smart-control/smart-control-settings/smart-control-settings.module';
 
 @Module({
   imports: [
@@ -31,6 +36,8 @@ import { DevicesModule } from '@app/device-management/devices/devices.module';
     MillModule,
     ProviderCredentialsModule,
     DevicesModule,
+    DeviceGroupsModule,
+    SmartControlSettingsModule,
     BullModule.registerQueueAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -82,6 +89,26 @@ import { DevicesModule } from '@app/device-management/devices/devices.module';
       }),
       name: DEVICE_UPDATE_QUEUE,
     }),
+    BullModule.registerQueueAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        connection: {
+          host: configService.get('REDIS_HOST', 'localhost'),
+          port: parseInt(configService.get('REDIS_PORT', '6380'), 10),
+        },
+        defaultJobOptions: {
+          attempts: 3,
+          backoff: {
+            type: 'exponential',
+            delay: 1000,
+          },
+          removeOnComplete: true,
+          removeOnFail: false,
+        },
+      }),
+      name: PEAK_HOUR_ADJUSTMENT_QUEUE,
+    }),
   ],
   controllers: [QueueController],
   providers: [
@@ -91,12 +118,15 @@ import { DevicesModule } from '@app/device-management/devices/devices.module';
     TokenCleanupProcessor,
     DeviceUpdateQueue,
     DeviceUpdateProcessor,
+    PeakHourAdjustmentQueue,
+    PeakHourAdjustmentProcessor,
     QueueInitializerService,
   ],
   exports: [
     PriceCollectorQueue,
     TokenCleanupQueue,
     DeviceUpdateQueue,
+    PeakHourAdjustmentQueue,
     QueueInitializerService,
   ],
 })

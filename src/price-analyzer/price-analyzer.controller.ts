@@ -20,11 +20,10 @@ export class PriceAnalyzerController {
   ) {
     const mockPriceData: DayAheadPrice = {
       zone: 'TEST',
-      date: '2025-05-06',
+      date: new Date('2025-05-06'),
       prices: [
-        10.5, 9.8, 11.2, 12.0, 13.4, 15.0, 16.5, 17.0,
-        14.2, 13.5, 12.8, 10.0, 8.7, 7.5, 5.4, 3.2,
-        4.1, 6.9, 9.2, 11.1, 13.3, 14.8, 13.9, 10.4,
+        10.5, 9.8, 11.2, 12.0, 13.4, 15.0, 16.5, 17.0, 14.2, 13.5, 12.8, 10.0,
+        8.7, 7.5, 5.4, 3.2, 4.1, 6.9, 9.2, 11.1, 13.3, 14.8, 13.9, 10.4,
       ],
       fetchedAt: new Date(),
     };
@@ -32,9 +31,13 @@ export class PriceAnalyzerController {
     const manualOverride = override === 'true';
     const parsedPercentile = percentile ? parseInt(percentile, 10) : 75;
 
-    const result = this.analyzerService.checkIfPriceIsAcceptable(mockPriceData, manualOverride, {
-      percentile: parsedPercentile,
-    });
+    const result = this.analyzerService.checkIfPriceIsAcceptable(
+      mockPriceData,
+      manualOverride,
+      {
+        percentile: parsedPercentile,
+      },
+    );
 
     return {
       zone: mockPriceData.zone,
@@ -53,28 +56,33 @@ export class PriceAnalyzerController {
     @Query('percentile') percentile?: string,
     @Query('override') override?: string,
   ) {
-    const latest = await this.priceCollectorService.getPricesForZone(zone.toUpperCase());
+    const latest = await this.priceCollectorService.getPricesForZone(
+      zone.toUpperCase(),
+    );
 
     if (!latest) {
       return { error: `No price data found for zone ${zone.toUpperCase()}` };
     }
-    
-  
+
     const manualOverride = override === 'true';
     const parsedPercentile = percentile ? parseInt(percentile, 10) : 25;
-  
+
     const currentHour = new Date().getHours();
     const currentPrice = latest.prices[currentHour];
-  
+
     const thresholdValue = this.analyzerService['calculatePercentileThreshold'](
       latest.prices,
       parsedPercentile,
     );
-  
-    const shouldActivate = this.analyzerService.checkIfPriceIsAcceptable(latest, manualOverride, {
-      percentile: parsedPercentile,
-    });
-  
+
+    const shouldActivate = this.analyzerService.checkIfPriceIsAcceptable(
+      latest,
+      manualOverride,
+      {
+        percentile: parsedPercentile,
+      },
+    );
+
     return {
       zone: latest.zone,
       date: latest.date,
@@ -83,31 +91,33 @@ export class PriceAnalyzerController {
       manualOverride,
       percentile: parsedPercentile,
       thresholdValue,
-      decision: shouldActivate ? '✅ Activate device' : '❌ Do not activate device',
+      decision: shouldActivate
+        ? '✅ Activate device'
+        : '❌ Do not activate device',
     };
   }
   @Get('test/mock/all')
   evaluateAllHoursForMock() {
     const mockPriceData: DayAheadPrice = {
       zone: 'MOCK',
-      date: '2025-05-06',
+      date: new Date('2025-05-06'),
       prices: [
-        12, 14, 13, 11, 9, 8, 6, 7, 10, 15, 18, 22,
-        25, 30, 28, 27, 24, 20, 16, 14, 12, 10, 8, 7,
+        12, 14, 13, 11, 9, 8, 6, 7, 10, 15, 18, 22, 25, 30, 28, 27, 24, 20, 16,
+        14, 12, 10, 8, 7,
       ],
       fetchedAt: new Date(),
     };
-  
+
     const percentile = 80;
     const manualOverride = false;
     const threshold = this.analyzerService['calculatePercentileThreshold'](
       mockPriceData.prices,
       percentile,
     );
-  
+
     const results = mockPriceData.prices.map((price, hour) => {
       const shouldActivate = price <= threshold;
-  
+
       return {
         hour,
         price,
@@ -115,7 +125,7 @@ export class PriceAnalyzerController {
         activate: shouldActivate ? '✅ ON' : '❌ OFF',
       };
     });
-  
+
     return {
       zone: mockPriceData.zone,
       date: mockPriceData.date,

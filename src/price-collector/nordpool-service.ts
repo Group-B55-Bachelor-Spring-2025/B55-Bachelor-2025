@@ -145,6 +145,13 @@ export class PriceCollectorService implements IPriceCollectorService {
     });
   }
 
+  async getPricesForDateAndZone(
+    date: Date,
+    zone_code: string,
+  ): Promise<DayAheadPrice | null> {
+    return this.priceRepo.findOneBy({ date, zone: zone_code });
+  }
+
   async clearAllPrices(): Promise<void> {
     await this.priceRepo.clear();
     console.log('All prices cleared from the database.');

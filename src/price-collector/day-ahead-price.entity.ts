@@ -6,7 +6,7 @@ export class DayAheadPrice {
   zone!: string;
 
   @PrimaryColumn({ type: 'date' })
-  date!: string;
+  date!: Date;
 
   @Column('float', { array: true })
   prices!: number[];
