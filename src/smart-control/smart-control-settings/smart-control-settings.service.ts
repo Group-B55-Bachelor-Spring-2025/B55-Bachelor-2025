@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateSmartControlSettingDto } from './dto/create-smart-control-setting.dto';
@@ -49,15 +53,22 @@ export class SmartControlSettingsService {
     });
   }
 
-  async findOne(id: number): Promise<SmartControlSetting> {
+  async findOne(id: number, userId: number): Promise<SmartControlSetting> {
     const setting = await this.smartControlSettingsRepository.findOne({
       where: { id },
-      relations: ['deviceGroup'],
+      relations: ['deviceGroup', 'deviceGroup.address'],
     });
 
     if (!setting) {
       throw new NotFoundException(
         `Smart control setting with ID ${id} not found`,
+      );
+    }
+
+    const address = setting.deviceGroup?.address;
+    if (!address || address.userId !== userId) {
+      throw new ForbiddenException(
+        `You do not have permission to access this smart control setting`,
       );
     }
 
@@ -67,8 +78,9 @@ export class SmartControlSettingsService {
   async update(
     id: number,
     updateSmartControlSettingDto: UpdateSmartControlSettingDto,
+    userId: number,
   ): Promise<SmartControlSetting> {
-    const setting = await this.findOne(id);
+    const setting = await this.findOne(id, userId);
 
     // Update the entity with the new values
     this.smartControlSettingsRepository.merge(
@@ -78,8 +90,8 @@ export class SmartControlSettingsService {
     return await this.smartControlSettingsRepository.save(setting);
   }
 
-  async remove(id: number): Promise<void> {
-    const setting = await this.findOne(id);
+  async remove(id: number, userId: number): Promise<void> {
+    const setting = await this.findOne(id, userId);
     await this.smartControlSettingsRepository.remove(setting);
   }
 

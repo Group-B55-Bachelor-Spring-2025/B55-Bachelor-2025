@@ -56,7 +56,7 @@ export class DeviceGroupsService {
   async findByAddressId(addressId: number): Promise<DeviceGroup[]> {
     return await this.deviceGroupsRepository.find({
       where: { addressId },
-      relations: ['devices'],
+      relations: ['devices', 'smartControlSettings'],
     });
   }
 
@@ -85,7 +85,7 @@ export class DeviceGroupsService {
   ): Promise<DeviceGroup | null> {
     const deviceGroup = await this.deviceGroupsRepository.findOne({
       where: { id },
-      relations: ['address', 'devices'],
+      relations: ['address', 'devices', 'smartControlSettings'],
     });
 
     if (!deviceGroup) {
@@ -115,7 +115,7 @@ export class DeviceGroupsService {
       where: {
         addressId: In(addressIds),
       },
-      relations: ['address', 'devices'],
+      relations: ['address', 'devices', 'smartControlSettings'],
     });
   }
 

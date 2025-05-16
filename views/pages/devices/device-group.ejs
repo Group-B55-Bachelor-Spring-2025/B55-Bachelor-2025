@@ -1,6 +1,9 @@
 <div class="flex justify-between items-center my-8">
-  <h1 class="text-3xl capitalize"><%= deviceGroup.name%><</h1>
-  <button id="showImportModal" class="bg-teal-700 rounded p-2 text-white cursor-pointer" onclick="document.getElementById('importDevicesModal').classList.remove('hidden')">Import Devices</button>
+  <h1 class="text-3xl capitalize"><%= deviceGroup.name%></h1>
+  <div class="mr-0">
+    <a class="bg-blue-700 rounded p-3 text-white cursor-pointer mr-2" href="/smart-control-settings/view/<%= deviceGroup.smartControlSettings && deviceGroup.smartControlSettings[0] ? deviceGroup.smartControlSettings[0].id : '' %>">Smart Control</a>
+    <button id="showImportModal" class="bg-teal-700 rounded p-2 text-white cursor-pointer" onclick="document.getElementById('importDevicesModal').classList.remove('hidden')">Import Devices</button>
+  </div>
 </div>
 <h6 class="mb-4 text-lg font-medium text-gray-800">Devices</h6>
 <% if (deviceGroup?.devices?.length > 0) { %>
@@ -9,7 +12,10 @@
       <tr>
         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Temperature</th>
+        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Smart Control</th>
         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Sync</th>
         <th scope="col" class="relative px-6 py-3">
           <span class="sr-only">View</span>
         </th>
@@ -29,8 +35,20 @@
             <p class="text-sm text-gray-500"><%= device.type %></p>
           </td>
           <td class="px-6 py-4 whitespace-nowrap">
-            <span class="text-sm text-gray-500"><%= device.status %></span>
+            <p class="text-sm text-gray-500"><%= device.targetTemperature ? device.targetTemperature + '°C' : 'N/A' %></p>
           </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <% if (device.excludeSmartControl) { %>
+              <span class="text-sm text-red-500">Disabled</span>
+            <% } else { %>
+              <span class="text-sm text-green-500">Enabled</span>
+            <% } %>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span class="text-sm text-green-500"><%= device.status %></span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span class="text-sm text-gray-500"><%= new Date(device.lastSync).toLocaleString() %></span>
           <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
             <a href="/devices/<%= device.id %>" class="text-blue-600 hover:text-blue-900">View</a>
           </td>
