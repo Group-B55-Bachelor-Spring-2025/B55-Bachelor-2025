@@ -1,7 +1,7 @@
 <div class="flex justify-between items-center my-8">
   <h1 class="text-3xl">Smartkontroll Innstillinger</h1>
   <div class="mr-0">
-    <a class="bg-teal-700 rounded p-3 text-white cursor-pointer" href="/">Tilbake</a>
+    <a class="bg-teal-700 rounded p-3 text-white cursor-pointer" href="/device-groups/<%= setting.deviceGroup.id %>">Tilbake</a>
   </div>
 </div>
 
@@ -120,24 +120,22 @@
         enabled: document.getElementById('enabled').checked,
         temperatureOffset: parseFloat(document.getElementById('temperatureOffset').value) || 0,
         energySavingsPercentage: parseInt(document.getElementById('energySavingsPercentage').value) || 10,
-        nightShiftEnabled: document.getElementById('nightShiftEnabled').checked,
-        nightShiftDuration: parseInt(document.getElementById('nightShiftDuration').value) || 0,
-        nightShiftSavingPercentage: parseInt(document.getElementById('nightShiftSavingPercentage').value) || 0
+        //nightShiftEnabled: document.getElementById('nightShiftEnabled').checked,
+        //nightShiftDuration: parseInt(document.getElementById('nightShiftDuration').value) || 0,
+       //nightShiftSavingPercentage: parseInt(document.getElementById('nightShiftSavingPercentage').value) || 0
       };
       
       // Handle time field
-      const timeValue = document.getElementById('nightShiftStart').value;
-      if (timeValue) {
-        const [hours, minutes] = timeValue.split(':');
-        const date = new Date();
-        date.setHours(parseInt(hours));
-        date.setMinutes(parseInt(minutes));
-        date.setSeconds(0);
-        data.nightShiftStart = date.toISOString();
-      }
-      
-      console.log('Submitting data:', data); // Debug log
-      
+      //const timeValue = document.getElementById('nightShiftStart').value;
+      // if (timeValue) {
+      //   const [hours, minutes] = timeValue.split(':');
+      //   const date = new Date();
+      //   date.setHours(parseInt(hours));
+      //   date.setMinutes(parseInt(minutes));
+      //   date.setSeconds(0);
+      //   data.nightShiftStart = date.toISOString();
+      // }
+       
       // Add loading state to submit button
       const submitButton = form.querySelector('button[type="submit"]');
       const originalButtonText = submitButton.textContent;
@@ -161,11 +159,7 @@
         return response.json();
       })
       .then(responseData => {
-        console.log('Success response:', responseData); // Debug log
         showNotification(responseData.message || 'Innstillingene ble oppdatert!', true);
-        
-        // Optionally refresh the page to show updated values
-        // setTimeout(() => window.location.reload(), 1000);
       })
       .catch(error => {
         console.error('Error:', error); // Debug log
