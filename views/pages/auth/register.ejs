@@ -1,20 +1,18 @@
-
-<h1>Register</h1>
-<form action="/auth/register" method="POST">
-  <div>
-    <label for="email">Name:</label>
-    <input type="text" id="name" name="name" required>
-  </div>
-  <div>
-    <label for="email">Email:</label>
-    <input type="email" id="email" name="email" required>
-  </div>
-  <div>
-    <label for="password">Password:</label>
-    <input type="password" id="password" name="password" required>
-  </div>
-  <button type="submit">Register</button>
-  <div>
-    <p>Already have an account? <a href="/login">Login here</a></p>
-  </div>
-</form>
+<div class="mx-auto w-2/4">
+  <h1 class="text-2xl font-semibold">Registrer deg</h1>
+  <form action="/auth/register" method="POST" class="mt-4 py-4 flex flex-col gap-4 w-full">
+    <div>
+      <input type="text" id="name" name="name" placeholder="Navn" required class="w-full p-2 border rounded">
+    </div>
+    <div>
+      <input type="email" id="email" name="email" placeholder="E-post" required class="w-full p-2 border rounded">
+    </div>
+    <div>
+      <input type="password" id="password" name="password" placeholder="Passord" required class="w-full p-2 border rounded">
+    </div>
+    <button type="submit" class="float-right px-4 py-2 bg-teal-700 text-white rounded cursor-pointer">Registrer deg</button>
+    <div>
+      <p class="text-center">Har du allerede en konto? <a href="/login" class="underline text-blue-500">Logg inn her</a></p>
+    </div>
+  </form>
+</div>

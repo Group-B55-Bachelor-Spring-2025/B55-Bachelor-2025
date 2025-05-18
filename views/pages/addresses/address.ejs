@@ -1,8 +1,8 @@
 <div class="flex justify-between items-center my-8">
   <h1 class="text-3xl capitalize"><%= address.name %></h1>
-  <button id="showAddressModal" class="bg-teal-700 rounded p-2 text-white cursor-pointer" onclick="document.getElementById('createDeviceGroupModal').classList.remove('hidden')">New Device Group</button>
+  <button id="showAddressModal" class="bg-teal-700 rounded p-2 text-white cursor-pointer" onclick="document.getElementById('createDeviceGroupModal').classList.remove('hidden')">Opprett enhetsgruppe</button>
 </div>
-<h6 class="mb-4 text-lg font-medium text-gray-800">Device Groups</h6>
+<h6 class="mb-4 text-lg font-medium text-gray-800">Enhetsgrupper</h6>
 
 <div class="flex flex-col space-y-4">
   <div class="bg-white rounded-lg shadow overflow-hidden">
@@ -12,12 +12,12 @@
           <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
               <tr>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Devices</th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Smart Control</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Navn</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enheter</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Opprettet</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Smartkontroll</th>
                 <th scope="col" class="relative px-6 py-3">
-                  <span class="sr-only">View</span>
+                  <span class="sr-only">Vis</span>
                 </th>
               </tr>
             </thead>
@@ -32,7 +32,7 @@
                     </div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
-                    <p class="text-sm text-gray-500"><%= deviceGroup.devices ? deviceGroup.devices.length : 0 %> devices</p>
+                    <p class="text-sm text-gray-500"><%= deviceGroup.devices ? deviceGroup.devices.length : 0 %> enheter</p>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <span class="text-sm text-gray-500">
@@ -42,15 +42,15 @@
                   <td class="px-6 py-4 whitespace-nowrap">
                     <% if (deviceGroup.smartControlSettings && deviceGroup.smartControlSettings.length > 0) { %>
                       <span class="text-sm text-gray-500">
-                        <%= deviceGroup.smartControlSettings[0].enabled ? 'Enabled' : 'Disabled' %>
+                        <%= deviceGroup.smartControlSettings[0].enabled ? 'Aktivert' : 'Deaktivert' %>
                       </span>
                     <% } else { %>
-                      <span class="text-sm text-gray-500">Not Configured</span>
+                      <span class="text-sm text-gray-500">Ikke konfigurert</span>
                     <% } %>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <a href="/device-groups/<%= deviceGroup.id %>" class="text-blue-600 hover:text-blue-900">
-                      View
+                      Vis
                     </a>
                   </td>
                 </tr>
@@ -59,8 +59,8 @@
           </table>
         <% } else { %>
           <div class="text-center py-8">
-            <p class="text-gray-500 text-sm mb-2">No device groups found for this address.</p>
-            <p class="text-gray-500 text-sm">Create a new device group to get started.</p>
+            <p class="text-gray-500 text-sm mb-2">Ingen enhetsgrupper funnet for denne lokasjonen.</p>
+            <p class="text-gray-500 text-sm">Opprett en ny enhetsgruppe for å komme i gang.</p>
           </div>
         <% } %>
       </div>
@@ -69,29 +69,29 @@
 </div>
 
 <!-- Create Device Group Modal -->
-<div id="createDeviceGroupModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 hidden">
+<div id="createDeviceGroupModal" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden z-50">
   <div class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all max-w-lg w-full">
     <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
       <div class="flex justify-between items-center pb-3 border-b border-gray-200 mb-4">
-        <h5 class="text-lg font-medium text-gray-900">Create New Device Group</h5>
+        <h5 class="text-lg font-medium text-gray-900">Opprett ny enhetsgruppe</h5>
         <button type="button" class="text-gray-400 hover:text-gray-500 cursor-pointer" onclick="hideModal('createDeviceGroupModal')">
-          <span class="sr-only">Close</span>
+          <span class="sr-only">Lukk</span>
           <span class="text-2xl">&times;</span>
         </button>
       </div>
       <form action="/device-groups" method="POST">
         <div class="mb-4">
-          <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+          <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Navn</label>
           <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" id="name" name="name" required>
         </div>
         <input type="hidden" name="addressId" value="<%= address ? address.id : addressId %>">
         <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
           <button type="button" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 cursor-pointer"
             onclick="hideModal('createDeviceGroupModal')">
-            Cancel
+            Avbryt
           </button>
           <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer">
-            Create
+            Opprett
           </button>
         </div>
       </form>
@@ -143,11 +143,11 @@
             if(data.error) {
               alert(data.error);
             } else {
-              alert('Device group created successfully');
+              alert('Enhetsgruppe opprettet');
             }
             window.location.reload();
           } else {
-            alert('Error creating device group');
+            alert('Feil ved oppretting av enhetsgruppe');
           }
         })
         .catch(error => console.error('Error:', error));
@@ -161,7 +161,7 @@
     
     if (success === 'true') {
       // Display success notification
-      showNotification('Device group created successfully', 'success');
+      showNotification('Enhetsgruppe opprettet', 'success');
     } else if (error) {
       // Display error notification
       showNotification(decodeURIComponent(error), 'error');

@@ -1,7 +1,6 @@
-
 <div class="flex justify-between items-center my-8">
-  <h1 class="text-3xl">Adderesses</h1>
-  <button id="showAddressModal" class="bg-teal-700 rounded p-2 text-white cursor-pointer">Add Address</button>
+  <h1 class="text-3xl">Mine lokasjoner</h1>
+  <button id="showAddressModal" class="bg-teal-700 rounded p-2 text-white cursor-pointer">Legg til ny lokasjon</button>
 </div>
 <% if (addresses?.length > 0) { %>
   <div class="grid grid-cols-4 gap-4">
@@ -11,16 +10,16 @@
           <h2 class="text-xl font-semibold"><%= address.name %></h2>
           <button class="cursor-pointer text-3xl">...</button>
         </div>
-        <!-- TODO: replace temp with number of devices on this location -->
-        <p class="text-center">temp element</p>
-        <a href="/address/<%= address.id %>" class="p-2 bg-teal-700 rounded text-center text-white">See all devices</a>
+        <!-- TODO: erstatt temp med antall enheter på denne lokasjonen -->
+        <p class="text-center">Sone: <%= address.region.name%></p>
+        <a href="/address/<%= address.id %>" class="p-2 bg-teal-700 rounded text-center text-white">Se alle enheter</a>
       </div>
     <% }); %>
   </div>
 <% } else { %>
   <div class="empty-state">
-    <p>You don't have any addresses yet.</p>
-    <button id="showAddressModalEmpty" class="btn">Add your first address</button>
+    <p>Du har ingen adresser ennå.</p>
+    <button id="showAddressModalEmpty" class="btn">Legg til din første adresse</button>
   </div>
 <% } %>
 
