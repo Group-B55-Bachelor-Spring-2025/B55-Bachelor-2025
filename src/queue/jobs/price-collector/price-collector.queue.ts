@@ -37,7 +37,7 @@ export class PriceCollectorQueue {
       {
         delay,
         repeat: {
-          pattern: '0 13 * * *', // At 13:00 every day
+          pattern: '0 15 * * *', // At 15:00 every day
         },
       },
     );
