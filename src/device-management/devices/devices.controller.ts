@@ -9,6 +9,7 @@ import {
   UseGuards,
   BadRequestException,
   NotFoundException,
+  Render,
 } from '@nestjs/common';
 import { DevicesService } from './devices.service';
 import { CreateDeviceDto } from './dto/create-device.dto';
@@ -60,6 +61,7 @@ export class DevicesController {
   }
 
   @Get(':id')
+  @Render('pages/devices/device')
   async findOne(@CurrentUser() user: User, @Param('id') id: string) {
     const device = await this.devicesService.findOne(+id);
 
@@ -76,7 +78,7 @@ export class DevicesController {
       user.id,
       device.deviceGroupId,
     );
-    return device;
+    return { device, title: 'Device Details' };
   }
 
   @Patch(':id')

@@ -38,7 +38,7 @@
             <p class="text-sm text-gray-500"><%= device.targetTemperature ? device.targetTemperature + '°C' : 'N/A' %></p>
           </td>
           <td class="px-6 py-4 whitespace-nowrap">
-            <% if (device.excludeSmartControl) { %>
+            <% if (device.excludeSmartCtrl || !deviceGroup?.smartControlSettings[0]?.enabled) { %>
               <span class="text-sm text-red-500">Deaktivert</span>
             <% } else { %>
               <span class="text-sm text-green-500">Aktivert</span>
