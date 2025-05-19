@@ -35,14 +35,10 @@ export class RedisConnectionConfig {
    * Supports both URL format and individual parameter format
    */
   private getRedisConnectionConfig(): any {
-    const redisUrl =
-      this.configService.get('REDIS_URL') ||
-      this.configService.get('REDIS_PUBLIC_URL');
-
-    if (redisUrl) {
-      this.logger.log(
-        `Using Redis URL: ${redisUrl.replace(/\/\/.*?:.*?@/, '//***:***@')}`,
-      );
+    const url = this.configService.get<string>('REDIS_URL') || '';
+    if (url && url !== '') {
+      const redisUrl = new URL(url);
+      this.logger.log(`Using Redis URL: ${redisUrl}`);
       // If we have a complete URL, return it directly
       return redisUrl;
     } else {
