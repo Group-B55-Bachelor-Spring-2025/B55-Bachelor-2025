@@ -43,8 +43,19 @@ import { SmartControlSettingsModule } from '@app/smart-control/smart-control-set
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         connection: {
-          host: configService.get('REDIS_HOST', 'localhost'),
-          port: parseInt(configService.get('REDIS_PORT', '6380'), 10),
+          host: configService.get(
+            'REDISHOST',
+            configService.get('REDIS_HOST', 'localhost'),
+          ),
+          port: parseInt(
+            configService.get(
+              'REDISPORT',
+              configService.get('REDIS_PORT', '6379'),
+            ),
+            10,
+          ),
+          username: configService.get('REDISUSER'),
+          password: configService.get('REDISPASSWORD'),
         },
         defaultJobOptions: {
           attempts: 3,
@@ -63,8 +74,19 @@ import { SmartControlSettingsModule } from '@app/smart-control/smart-control-set
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         connection: {
-          host: configService.get('REDIS_HOST', 'localhost'),
-          port: parseInt(configService.get('REDIS_PORT', '6380'), 10),
+          host: configService.get(
+            'REDISHOST',
+            configService.get('REDIS_HOST', 'localhost'),
+          ),
+          port: parseInt(
+            configService.get(
+              'REDISPORT',
+              configService.get('REDIS_PORT', '6379'),
+            ),
+            10,
+          ),
+          username: configService.get('REDISUSER'),
+          password: configService.get('REDISPASSWORD'),
         },
       }),
       name: TOKEN_CLEANUP_QUEUE,
@@ -74,8 +96,19 @@ import { SmartControlSettingsModule } from '@app/smart-control/smart-control-set
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         connection: {
-          host: configService.get('REDIS_HOST', 'localhost'),
-          port: parseInt(configService.get('REDIS_PORT', '6380'), 10),
+          host: configService.get(
+            'REDISHOST',
+            configService.get('REDIS_HOST', 'localhost'),
+          ),
+          port: parseInt(
+            configService.get(
+              'REDISPORT',
+              configService.get('REDIS_PORT', '6379'),
+            ),
+            10,
+          ),
+          username: configService.get('REDISUSER'),
+          password: configService.get('REDISPASSWORD'),
         },
         defaultJobOptions: {
           attempts: 3,
@@ -94,8 +127,19 @@ import { SmartControlSettingsModule } from '@app/smart-control/smart-control-set
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         connection: {
-          host: configService.get('REDIS_HOST', 'localhost'),
-          port: parseInt(configService.get('REDIS_PORT', '6380'), 10),
+          host: configService.get(
+            'REDISHOST',
+            configService.get('REDIS_HOST', 'localhost'),
+          ),
+          port: parseInt(
+            configService.get(
+              'REDISPORT',
+              configService.get('REDIS_PORT', '6379'),
+            ),
+            10,
+          ),
+          username: configService.get('REDISUSER'),
+          password: configService.get('REDISPASSWORD'),
         },
         defaultJobOptions: {
           attempts: 3,

@@ -33,8 +33,12 @@ import { QueueModule } from './queue/queue.module';
         DB_NAME: Joi.string().required(),
 
         // Redis
-        REDIS_HOST: Joi.string().default('localhost'),
-        REDIS_PORT: Joi.number().default(6379),
+        REDIS_HOST: Joi.string(),
+        REDIS_PORT: Joi.number(),
+        REDISHOST: Joi.string(),
+        REDISPORT: Joi.number(),
+        REDISUSER: Joi.string(),
+        REDISPASSWORD: Joi.string(),
 
         // Application
         NODE_ENV: Joi.string()
