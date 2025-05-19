@@ -25,12 +25,19 @@ import { QueueModule } from './queue/queue.module';
     ConfigModule.forRoot({
       isGlobal: true,
       validationSchema: Joi.object({
-        // Database
-        DB_HOST: Joi.string().required(),
+        // Database - Support both local and prod
+        DB_HOST: Joi.string(),
         DB_PORT: Joi.number().default(5432),
-        DB_USER: Joi.string().required(),
-        DB_PASS: Joi.string().required(),
-        DB_NAME: Joi.string().required(),
+        DB_USER: Joi.string(),
+        DB_PASS: Joi.string(),
+        DB_NAME: Joi.string(),
+
+        PGHOST: Joi.string(),
+        PGPORT: Joi.number().default(5432),
+        PGUSER: Joi.string(),
+        PGPASSWORD: Joi.string(),
+        PGDATABASE: Joi.string(),
+        DATABASE_URL: Joi.string(),
 
         // Redis
         REDIS_HOST: Joi.string(),
