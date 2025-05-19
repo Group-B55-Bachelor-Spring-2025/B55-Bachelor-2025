@@ -2,6 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { QueueOptions } from 'bullmq';
 
+/**
+ * Service for centralizing Redis connection configuration
+ * Used by queue module to avoid repeating connection logic
+ */
 @Injectable()
 export class RedisConnectionConfig {
   private readonly logger = new Logger(RedisConnectionConfig.name);
@@ -35,11 +39,14 @@ export class RedisConnectionConfig {
    * Supports both URL format and individual parameter format
    */
   private getRedisConnectionConfig(): any {
-    const url = this.configService.get<string>('REDIS_URL') || '';
-    if (url && url !== '') {
-      const redisUrl = new URL(url);
-      this.logger.log(`Using Redis URL: ${redisUrl}`);
-      // If we have a complete URL, return it directly
+    // First check for a complete REDIS_URL from Railway
+    const redisUrl = this.configService.get<string>('REDIS_URL');
+
+    if (redisUrl && redisUrl.startsWith('redis://')) {
+      this.logger.log(
+        `Using Redis URL: ${redisUrl.replace(/\/\/.*?:.*?@/, '//***:***@')}`,
+      );
+      // Return the URL string directly, not a URL object
       return redisUrl;
     } else {
       // Otherwise, use individual connection parameters
@@ -58,7 +65,9 @@ export class RedisConnectionConfig {
       const password = this.configService.get('REDISPASSWORD');
 
       this.logger.log(
-        `Using Redis connection parameters - Host: ${host}, Port: ${port}, Username: ${username ? '(set)' : '(not set)'}, Password: ${password ? '(set)' : '(not set)'}`,
+        `Using Redis connection parameters - Host: ${host}, Port: ${port}, Username: ${
+          username ? '(set)' : '(not set)'
+        }, Password: ${password ? '(set)' : '(not set)'}`,
       );
 
       return {
