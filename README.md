@@ -1,9 +1,6 @@
 # Smart Klimakontrollsystem
 
 ## Overview
-The Smart Klimakontrollsystem is a NestJS application designed to manage climate control systems efficiently. It utilizes PostgreSQL with TimescaleDB for data storage and Redis with BullMQ for managing background jobs and queues.
-
-## Overview
 
 The Smart Climate Control System is a solution designed to optimize heating and cooling systems based on electricity prices. The system helps property managers and individual users reduce energy costs while maintaining comfort levels by automatically controlling climate systems during high electricity price periods.
 
